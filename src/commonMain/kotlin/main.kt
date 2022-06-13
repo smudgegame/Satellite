@@ -1,27 +1,42 @@
-import com.soywiz.klock.seconds
 import com.soywiz.korge.*
 import com.soywiz.korge.tween.*
 import com.soywiz.korge.view.*
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.RGBA
+import com.soywiz.korim.font.BitmapFont
 import com.soywiz.korim.font.readBitmapFont
 import com.soywiz.korim.format.*
 import com.soywiz.korio.file.std.*
-import com.soywiz.korma.geom.degrees
 import com.soywiz.korma.geom.vector.roundRect
-import com.soywiz.korma.interpolation.Easing
+import kotlin.properties.*
+import kotlin.random.*
+
+var cellSize: Double = 0.0
+var fieldSize: Double = 0.0
+var leftIndent: Double = 0.0
+var topIndent: Double = 0.0
+var font: BitmapFont by Delegates.notNull()
+
+//Block management
+var map = PositionMap()
+//TODO: Question for Austin, why blocks val and mutable... isn't that a var (I know we've discussed this)
+val blocks = mutableMapOf<Int,Block>()
+var freeId = 0
+
+fun columnX(number: Int) = leftIndent + 10 + (cellSize + 10) * number
+fun rowY(number: Int) = topIndent + 10 + (cellSize + 10) * number
 
 suspend fun main() = Korge(width = 480, height = 640, title = "2048", bgcolor = RGBA(253, 247, 240)) {
+    font = resourcesVfs["clear_sans.fnt"].readBitmapFont()
 
-    val font = resourcesVfs["clear_sans.fnt"].readBitmapFont()
     val restartImg = resourcesVfs["restart.png"].readBitmap()
     val undoImg = resourcesVfs["undo.png"].readBitmap()
 
     //Setting game component sizes based on view width
-    val cellSize = views.virtualWidth / 5.0
-    val fieldSize = 50 + 4 * cellSize
-    val leftIndent = (views.virtualWidth - fieldSize) / 2
-    val topIndent = 150.0
+    cellSize = views.virtualWidth / 5.0
+    fieldSize = 50 + 4 * cellSize
+    leftIndent = (views.virtualWidth - fieldSize) / 2
+    topIndent = 150.0
 
     //Creating game board frame
     /* First Attempts
@@ -110,4 +125,26 @@ suspend fun main() = Korge(width = 480, height = 640, title = "2048", bgcolor = 
         alignTopToBottomOf(bgBest, 5.0)
         alignRightToLeftOf(restartBlock,5.0)
     }
+
+    InitOrderDemo("Test")
+
+    generateBlock()
+}
+
+fun Container.generateBlock() {
+    val position = map.getRandomFreePosition() ?: return
+    val number = if (Random.nextDouble() < 0.9) Number.ZERO else Number.ONE
+    val newId = createNewBlock(number, position)
+    map[position.x, position.y] = newId
+
+}
+
+fun Container.createNewBlock(number: Number, position: Position): Int {
+    val id = freeId++
+    createNewBlockWithId(id, number, position)
+    return id
+}
+
+fun Container.createNewBlockWithId(id: Int, number: Number, position: Position) {
+    blocks[id] = block(number).position(columnX(position.x), rowY(position.y))
 }
