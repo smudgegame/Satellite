@@ -2,15 +2,16 @@ import com.soywiz.korim.color.*
 import Number.*
 import com.soywiz.korge.view.*
 
-//TODO: Question for Austin, extension function to Container and value/functions outside of classes?
-fun Container.block(number: Number) = Block(number).addTo(this)
+fun Container.block(number: Number) : Block {
+    return Block(number).addTo(this)
+}
 
-class Block(val number: Number ): Container() {
+class Block(val number: Number): Container() {
 
     init {
         roundRect(cellSize, cellSize, 5.0, fill = number.color)
         val textColor = when (number) {
-            ZERO, ONE, -> Colors.BLACK
+            ZERO, ONE -> Colors.BLACK
             else -> Colors.WHITE
         }
         text(number.value.toString(), textSizeFor(number), textColor, font) {

@@ -1,4 +1,6 @@
+import com.soywiz.korev.Key
 import com.soywiz.korge.*
+import com.soywiz.korge.input.*
 import com.soywiz.korge.tween.*
 import com.soywiz.korge.view.*
 import com.soywiz.korim.color.Colors
@@ -11,6 +13,7 @@ import com.soywiz.korma.geom.vector.roundRect
 import kotlin.properties.*
 import kotlin.random.*
 
+
 var cellSize: Double = 0.0
 var fieldSize: Double = 0.0
 var leftIndent: Double = 0.0
@@ -19,14 +22,14 @@ var font: BitmapFont by Delegates.notNull()
 
 //Block management
 var map = PositionMap()
-//TODO: Question for Austin, why blocks val and mutable... isn't that a var (I know we've discussed this)
-val blocks = mutableMapOf<Int,Block>()
+val blocks: MutableMap<Int, Block> = mutableMapOf<Int,Block>()
 var freeId = 0
 
 fun columnX(number: Int) = leftIndent + 10 + (cellSize + 10) * number
 fun rowY(number: Int) = topIndent + 10 + (cellSize + 10) * number
 
 suspend fun main() = Korge(width = 480, height = 640, title = "2048", bgcolor = RGBA(253, 247, 240)) {
+
     font = resourcesVfs["clear_sans.fnt"].readBitmapFont()
 
     val restartImg = resourcesVfs["restart.png"].readBitmap()
@@ -129,6 +132,29 @@ suspend fun main() = Korge(width = 480, height = 640, title = "2048", bgcolor = 
     InitOrderDemo("Test")
 
     generateBlock()
+
+    root.keys.down {
+        when (it.key) {
+            Key.LEFT -> moveBlocksTo(Direction.LEFT)
+            Key.RIGHT -> moveBlocksTo(Direction.RIGHT)
+            Key.UP -> moveBlocksTo(Direction.TOP)
+            Key.DOWN -> moveBlocksTo(Direction.BOTTOM)
+            else -> Unit
+        }
+    }
+
+    onSwipe(20.0) {
+        when (it.direction) {
+            SwipeDirection.LEFT -> moveBlocksTo(Direction.LEFT)
+            SwipeDirection.RIGHT -> moveBlocksTo(Direction.RIGHT)
+            SwipeDirection.TOP -> moveBlocksTo(Direction.TOP)
+            SwipeDirection.BOTTOM -> moveBlocksTo(Direction.BOTTOM)
+        }
+    }
+}
+
+fun Stage.moveBlocksTo(direction: Direction) {
+    println(direction)
 }
 
 fun Container.generateBlock() {
