@@ -1,15 +1,23 @@
-import com.soywiz.korev.Key
+import com.soywiz.klock.*
+import com.soywiz.korev.*
 import com.soywiz.korge.*
+import com.soywiz.korge.animate.*
 import com.soywiz.korge.input.*
+import com.soywiz.korge.service.storage.*
 import com.soywiz.korge.tween.*
+import com.soywiz.korge.ui.*
 import com.soywiz.korge.view.*
-import com.soywiz.korim.color.Colors
-import com.soywiz.korim.color.RGBA
-import com.soywiz.korim.font.BitmapFont
-import com.soywiz.korim.font.readBitmapFont
+import com.soywiz.korim.color.*
+import com.soywiz.korim.font.*
 import com.soywiz.korim.format.*
+import com.soywiz.korim.text.TextAlignment
+import com.soywiz.korio.async.*
+import com.soywiz.korio.async.ObservableProperty
 import com.soywiz.korio.file.std.*
-import com.soywiz.korma.geom.vector.roundRect
+import com.soywiz.korma.geom.*
+import com.soywiz.korma.geom.vector.*
+import com.soywiz.korma.interpolation.*
+import kotlin.collections.set
 import kotlin.properties.*
 import kotlin.random.*
 
@@ -27,6 +35,9 @@ var freeId = 0
 
 fun columnX(number: Int) = leftIndent + 10 + (cellSize + 10) * number
 fun rowY(number: Int) = topIndent + 10 + (cellSize + 10) * number
+
+var isAnimationRunning = false
+var isGameOver = false
 
 suspend fun main() = Korge(width = 480, height = 640, title = "2048", bgcolor = RGBA(253, 247, 240)) {
 
@@ -109,6 +120,37 @@ suspend fun main() = Korge(width = 480, height = 640, title = "2048", bgcolor = 
     }
 
     val btnSize = cellSize * 0.3
+
+    fun Container.showGameOver(onRestart: () -> Unit) = container {
+        fun restart() {
+            this@container.removeFromParent()
+            onRestart()
+        }
+
+        position(leftIndent, topIndent)
+
+        roundRect(fieldSize,fieldSize,5.0,fill = Colors["#FFFFFF33"])
+        text("Game Over",60.0, Colors.BLACK, font){
+            centerBetween(0.0,0.0,fieldSize,fieldSize)
+            y -= 60
+        }
+        uiText("Try again", 120.0, 35.0){
+            centerBetween(0.0,0.0,fieldSize,fieldSize)
+            y += 20
+            textSize = 40.0
+            textFont = font
+            textColor = RGBA(0, 0, 0)
+            onClick { restart() }
+        }
+
+        keys.down {
+            when(it.key){
+                Key.ENTER, Key.SPACE -> restart()
+                else -> Unit
+            }
+        }
+    }
+
     val restartBlock = container{
         val background = roundRect(btnSize, btnSize, 5.0, fill = RGBA(185, 174, 160))
         image(restartImg){
@@ -117,6 +159,9 @@ suspend fun main() = Korge(width = 480, height = 640, title = "2048", bgcolor = 
         }
         alignTopToBottomOf(bgBest, 5.0)
         alignRightToRightOf(bgField)
+        onClick{
+            this@Korge.restart()
+        }
     }
 
     val undoBlock = container{
@@ -129,7 +174,72 @@ suspend fun main() = Korge(width = 480, height = 640, title = "2048", bgcolor = 
         alignRightToLeftOf(restartBlock,5.0)
     }
 
-    InitOrderDemo("Test")
+    fun getNotEmptyPositionFrom(direction: Direction, line: Int): Position? {
+        when (direction) {
+            Direction.LEFT -> for (i in 0..3) getOrNull(i, line)?.left { return it}
+        }
+    }
+
+    fun calculateNewMap(
+        map: PositionMap,
+        direction: Direction,
+        moves: MutableList<Pair<Int,Position>>,
+        merges: MutableList<Triple<Int,Int,Position>>
+    ): PositionMap{
+        val newMap = PositionMap()
+        val startIndex = when (direction){
+            Direction.LEFT, Direction.TOP -> 0
+            Direction.RIGHT, Direction.BOTTOM -> 3
+        }
+        var columnRow = startIndex
+
+        fun newPosition(line: Int) = when (direction) {
+            Direction.LEFT -> Position(columnRow++, line)
+            Direction.RIGHT -> Position(columnRow--,line)
+            Direction.TOP -> Position(line,columnRow++)
+            Direction.BOTTOM -> Position(line,columnRow--)
+        }
+
+        for(line in 0..3){
+            var curPos = map.getNotEmptyPositionFrom(direction, line)
+            columnRow = startIndex
+            while (curPos != null){
+                val newPos = newPosition(line)
+                val curId = map[curPos.x, curPos.y]
+                map[curPos.x, curPos.y] = -1
+            }
+        }
+    }
+
+    //TODO: Question for Austin, Ordering of functions matters?
+    fun Stage.moveBlocksTo(direction: Direction) {
+        if(isAnimationRunning) return
+        if(!map.hasAvailableMoves()){
+            if(!isGameOver){
+                isGameOver = true
+                showGameOver {
+                    isGameOver = false
+                    restart()
+                }
+            }
+            return
+        }
+
+        val moves = mutableListOf<Pair<Int,Position>>()
+        val merges = mutableListOf<Triple<Int,Int,Position>>()
+
+        val newMap = calculateNewMap(map.copy(), direction, moves, merges)
+
+        if(map != newMap) {
+            isAnimationRunning = true
+            showAnimation(moves, merges) {
+                // when animation ends
+                map = newMap
+                generateBlock()
+                isAnimationRunning = false
+            }
+        }
+    }
 
     generateBlock()
 
@@ -153,10 +263,6 @@ suspend fun main() = Korge(width = 480, height = 640, title = "2048", bgcolor = 
     }
 }
 
-fun Stage.moveBlocksTo(direction: Direction) {
-    println(direction)
-}
-
 fun Container.generateBlock() {
     val position = map.getRandomFreePosition() ?: return
     val number = if (Random.nextDouble() < 0.9) Number.ZERO else Number.ONE
@@ -174,3 +280,5 @@ fun Container.createNewBlock(number: Number, position: Position): Int {
 fun Container.createNewBlockWithId(id: Int, number: Number, position: Position) {
     blocks[id] = block(number).position(columnX(position.x), rowY(position.y))
 }
+
+

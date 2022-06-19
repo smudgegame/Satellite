@@ -42,5 +42,20 @@ class PositionMap(private val array: IntArray2 = IntArray2(4, 4, -1)) {
         }
         return null
     }
+
+    fun hasAvailableMoves(): Boolean {
+        array.each { x, y, _ ->
+            if (hasAdjacentEqualPosition(x, y)) return true
+        }
+        return false
+    }
+
+    // TODO: Question for Austin, this function initialization is tough for me to understand...
+    // I get what the rest of the function is doing
+    private fun hasAdjacentEqualPosition(x: Int, y: Int) = getNumber(x, y).let{
+        it == getNumber(x-1,y) || it == getNumber(x+1,y) || it == getNumber(x,y-1) || it == getNumber(x,y+1)
+    }
+
+    fun copy() = PositionMap(array.copy(data = array.data.copyOf()))
 }
 
