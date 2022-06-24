@@ -19,7 +19,7 @@ apply<KorgeGradlePlugin>()
 korge {
 	id = "org.maak.satelite"
 // To enable all targets at once
-
+	supportBox2d()
 	//targetAll()
 
 // To enable targets based on properties/environment variables
