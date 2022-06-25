@@ -22,6 +22,8 @@ korge {
 
 	//targetAll()
 
+	supportBox2d()
+
 // To enable targets based on properties/environment variables
 	//targetDefault()
 
