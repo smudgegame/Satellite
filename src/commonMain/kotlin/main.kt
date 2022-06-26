@@ -1,3 +1,4 @@
+import com.soywiz.klogger.Console
 import com.soywiz.korev.Key
 import com.soywiz.korge.Korge
 import com.soywiz.korge.box2d.body
@@ -24,7 +25,7 @@ suspend fun main() = Korge(
 ) {
 
 	val angularThrust = 4f
-	val forwardThrust = 15f
+	val forwardThrust = 12f
 	val reverseThrust = -0.25f * forwardThrust
 
 	val rec = solidRect(40, 15, Colors.GREEN).position(300, 100).registerBodyWithFixture(type = BodyType.DYNAMIC, friction = 2f, gravityScale = 0f)
@@ -35,7 +36,7 @@ suspend fun main() = Korge(
 
 		//Linear Drag
 		if(ship.linearVelocity.lengthSquared() > 0f){
-			ship.applyForceToCenter(Vec2(ship.linearVelocityX / -4, ship.linearVelocityY / -4))
+			ship.applyForceToCenter(ship.linearVelocity.mul(-0.2f))
 		}
 
 		//Angular Drag
@@ -76,15 +77,16 @@ fun calculateAngularThrust(body: Body, angularThrust: Float): Float{
 fun calculateThrustVector(body: Body, thrustAmount: Float): Vec2 {
 	val maxLinearVel = 5f
 
-	var thrustDirection = Vec2(body.angle.cosine.toFloat(), body.angle.sine.toFloat())
-	var shipSpeed = body.linearVelocity.length()
-	var shipVelocityDirection = body.linearVelocity.mul(1 / shipSpeed)
+	val thrustDirection = Vec2(body.angle.cosine.toFloat(), body.angle.sine.toFloat())
+	val fullThrustVector = thrustDirection.mul(thrustAmount)
+	val shipSpeed = body.linearVelocity.length()
+	val shipVelocityDirection = body.linearVelocity.mul(1 / shipSpeed)
 
 	//calculate limited thrust
-	var amountOfThrustInDirectionOfVelocity = thrustAmount * Vec2.dot(thrustDirection, shipVelocityDirection)
-	var thrustInDirectionOfMaxVelocity = shipVelocityDirection.mul(amountOfThrustInDirectionOfVelocity)
-	var limitedThrustVector = thrustDirection.sub(thrustInDirectionOfMaxVelocity)
-	var isThrustInDirectionOfMaxVelocity = sign(thrustAmount) * sign(Vec2.dot(shipVelocityDirection, thrustDirection)) > 0
+	val amountOfThrustInDirectionOfVelocity = thrustAmount * Vec2.dot(thrustDirection, shipVelocityDirection)
+	val thrustInDirectionOfMaxVelocity = shipVelocityDirection.mul(amountOfThrustInDirectionOfVelocity)
+	val limitedThrustVector = fullThrustVector.sub(thrustInDirectionOfMaxVelocity)
+	val isThrustInDirectionOfMaxVelocity = sign(thrustAmount) * sign(Vec2.dot(shipVelocityDirection, thrustDirection)) > 0
 
 	return if (shipSpeed > maxLinearVel &&  isThrustInDirectionOfMaxVelocity) {
 		limitedThrustVector
