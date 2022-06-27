@@ -19,14 +19,14 @@ import kotlin.math.sign
  * Click on anywhere to spawn a new box!
  */
 
+const val angularThrust = 4f
+const val forwardThrust = 12f
+const val fineThrust = 0.25f * forwardThrust
+
 suspend fun main() = Korge(
 	width = 800, height = 800,
 	quality = GameWindow.Quality.PERFORMANCE, title = "My Awesome Box2D Game!"
 ) {
-
-	val angularThrust = 4f
-	val forwardThrust = 12f
-	val reverseThrust = -0.25f * forwardThrust
 
 	val rec = solidRect(40, 15, Colors.GREEN).position(300, 100).registerBodyWithFixture(type = BodyType.DYNAMIC, friction = 2f, gravityScale = 0f)
 	val ship = rec.body!!
@@ -44,25 +44,70 @@ suspend fun main() = Korge(
 			ship.applyTorque(sign(ship.angularVelocity) / -1.5f)
 		}
 
-		//Controls
-		if (input.keys.pressing(Key.UP)){
-			ship.applyForceToCenter(calculateThrustVector(ship, forwardThrust))
+		//Ship Thrust Controls
+		if (input.keys.pressing(Key.UP ) || input.keys.pressing(Key.W ) ){
+			thrustForward(ship)
 		}
-		if (input.keys.pressing(Key.DOWN)){
-			ship.applyForceToCenter(calculateThrustVector(ship, reverseThrust))
+		if (input.keys.pressing(Key.DOWN ) || input.keys.pressing(Key.S)){
+			thrustBackward(ship)
 		}
-		if(input.keys.pressing(Key.RIGHT)){
-			ship.applyTorque(calculateAngularThrust(ship, angularThrust))
+		if(input.keys.pressing(Key.E)){
+			thrustRight(ship)
 		}
-		if(input.keys.pressing(Key.LEFT)){
-			ship.applyTorque(calculateAngularThrust(ship, -angularThrust))
+		if(input.keys.pressing(Key.Q)){
+			thrustLeft(ship)
 		}
+		if(input.keys.pressing(Key.RIGHT) ||  input.keys.pressing(Key.D)){
+			torqueRight(ship)
+		}
+		if(input.keys.pressing(Key.LEFT) || input.keys.pressing(Key.A)){
+			torqueLeft(ship)
+		}
+
+		Console.info(ship.linearVelocity.length())
 	}
+
 
 	solidRect(200,20, Colors.WHITE).position (200,700).registerBodyWithFixture(type = BodyType.STATIC)
 }
 
-fun calculateAngularThrust(body: Body, angularThrust: Float): Float{
+fun thrustForward(body: Body){
+	val thrustDirection = Vec2(body.angle.cosine.toFloat(), body.angle.sine.toFloat())
+	val thrustVector = thrustDirection.mul(forwardThrust)
+
+	body.applyForceToCenter(calculateLimitedThrustVector(body, thrustVector))
+}
+
+fun thrustBackward(body: Body){
+	val thrustDirection = Vec2(body.angle.cosine.toFloat(), body.angle.sine.toFloat())
+	val thrustVector = thrustDirection.mul(-fineThrust)
+
+	body.applyForceToCenter(calculateLimitedThrustVector(body, thrustVector))
+}
+
+fun thrustRight(body: Body){
+	val thrustDirection = Vec2(-body.angle.sine.toFloat(), body.angle.cosine.toFloat())
+	val thrustVector = thrustDirection.mul(fineThrust)
+
+	body.applyForceToCenter(calculateLimitedThrustVector(body, thrustVector))
+}
+
+fun thrustLeft(body: Body){
+	val thrustDirection = Vec2(body.angle.sine.toFloat(), -body.angle.cosine.toFloat())
+	val thrustVector = thrustDirection.mul(fineThrust)
+
+	body.applyForceToCenter(calculateLimitedThrustVector(body, thrustVector))
+}
+
+fun torqueRight(body: Body){
+	body.applyTorque(calculateLimitedAngularThrust(body, angularThrust))
+}
+
+fun torqueLeft(body: Body){
+	body.applyTorque(calculateLimitedAngularThrust(body, -angularThrust))
+}
+
+fun calculateLimitedAngularThrust(body: Body, angularThrust: Float): Float{
 	val maxAngularVelocity = 1.5f
 
 	if(body.angularVelocity.absoluteValue > maxAngularVelocity){
@@ -74,10 +119,12 @@ fun calculateAngularThrust(body: Body, angularThrust: Float): Float{
 	return angularThrust
 }
 
-fun calculateThrustVector(body: Body, thrustAmount: Float): Vec2 {
+fun calculateLimitedThrustVector(body: Body, thrustVector: Vec2): Vec2 {
 	val maxLinearVel = 5f
 
-	val thrustDirection = Vec2(body.angle.cosine.toFloat(), body.angle.sine.toFloat())
+	val thrustAmount = thrustVector.length()
+
+	val thrustDirection = thrustVector.mul(1/thrustAmount)
 	val fullThrustVector = thrustDirection.mul(thrustAmount)
 	val shipSpeed = body.linearVelocity.length()
 	val shipVelocityDirection = body.linearVelocity.mul(1 / shipSpeed)
