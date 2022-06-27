@@ -1,4 +1,3 @@
-import com.soywiz.klogger.Console
 import com.soywiz.korev.Key
 import com.soywiz.korge.Korge
 import com.soywiz.korge.box2d.body
@@ -21,7 +20,7 @@ import kotlin.math.sign
 
 const val angularThrust = 1f
 const val forwardThrust = 12f
-const val fineThrust = 0.25f * forwardThrust
+const val fineThrust = 0.15f * forwardThrust
 
 const val maxAngularVelocity = 1.5f
 const val maxLinearVel = 5f
@@ -30,24 +29,32 @@ suspend fun main() = Korge(
 	width = 800, height = 800,
 	quality = GameWindow.Quality.PERFORMANCE, title = "My Awesome Box2D Game!"
 ) {
-
-	var flightAssist = false
 	var thrustInput: Boolean
 	var torqueInput: Boolean
+	var flightAssist = false
 
 	//ship
-	val rec = solidRect(40, 15, Colors.GREEN).position(300, 100).registerBodyWithFixture(type = BodyType.DYNAMIC, friction = 2f, gravityScale = 0f)
+	val rec = solidRect(40, 15, Colors.BLUE).position(300, 100).registerBodyWithFixture(type = BodyType.DYNAMIC, friction = 2f, gravityScale = 0f)
 	val ship = rec.body!!
 
 	//platform
 	solidRect(200,20, Colors.WHITE).position (200,700).registerBodyWithFixture(type = BodyType.STATIC)
+
+	//UI
+	val flightAssistIndicator = solidRect(100, 25,  Colors.WHITE).position(700,0)
+	addChild(flightAssistIndicator)
+
+	val flightAssistText = text("'X' FA: OFF",50 * 0.25, Colors.RED){
+		centerXOn(flightAssistIndicator)
+		alignTopToTopOf(flightAssistIndicator, 5.0)
+	}
 
 	addUpdater {
 		thrustInput = false
 		torqueInput = false
 
 		wrapBodyInView(ship)
-		//applyDragToBody(ship)
+		applyDragToBody(ship)
 
 		//Ship Thrust Controls
 		if (input.keys.pressing(Key.UP ) || input.keys.pressing(Key.W )){
@@ -74,15 +81,23 @@ suspend fun main() = Korge(
 			torqueInput = true
 			torqueLeft(ship, angularThrust)
 		}
-
 		if(input.keys.justPressed(Key.X)) {
-			flightAssist = flightAssist == false
+			if(flightAssist){
+				flightAssist = false
+				flightAssistText.text = "'X' FA: OFF"
+				flightAssistText.color = Colors.RED
+			}
+			else{
+				flightAssist = true
+				flightAssistText.text = "'X' FA: ON"
+				flightAssistText.color = Colors.DARKGREEN
+			}
 		}
-		applyFlightAssist(ship, thrustInput, torqueInput, toggled = flightAssist)
+		flightAssist(ship, thrustInput, torqueInput, toggled = flightAssist)
 	}
 }
 
-fun applyFlightAssist(
+fun flightAssist(
 	body: Body,
 	thrustInput: Boolean,
 	torqueInput: Boolean,
@@ -182,12 +197,12 @@ fun calculateLimitedThrustVector(body: Body, thrustVector: Vec2): Vec2 {
 fun applyDragToBody(body: Body){
 	//Linear Drag
 	if(body.linearVelocity.lengthSquared() > 0f){
-		body.applyForceToCenter(body.linearVelocity.mul(-0.2f))
+		body.applyForceToCenter(body.linearVelocity.mul(-0.005f * body.linearVelocity.lengthSquared()))
 	}
 
 	//Angular Drag
 	if(body.angularVelocity.absoluteValue > 0f){
-		body.applyTorque(sign(body.angularVelocity) / -1.5f)
+		body.applyTorque(sign(body.angularVelocity) * -0.005f)
 	}
 }
 
