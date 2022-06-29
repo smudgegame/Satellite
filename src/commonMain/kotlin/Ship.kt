@@ -31,27 +31,27 @@ class Ship(parent: Container): Container() {
         var torqueInput = false
         if (input.keys.pressing(Key.UP) || input.keys.pressing(Key.W)) {
             thrustInput = true
-            thrustForward(ship, forwardThrust)
+            ship.thrustForward(forwardThrust)
         }
         if (input.keys.pressing(Key.DOWN) || input.keys.pressing(Key.S)) {
             thrustInput = true
-            thrustBackward(ship, fineThrust)
+            ship.thrustBackward(fineThrust)
         }
         if (input.keys.pressing(Key.E) || input.keys.pressing(Key.PAGE_DOWN)) {
             thrustInput = true
-            thrustRight(ship, fineThrust)
+            ship.thrustRight(fineThrust)
         }
         if (input.keys.pressing(Key.Q) || input.keys.pressing(Key.DELETE)) {
             thrustInput = true
-            thrustLeft(ship, fineThrust)
+            ship.thrustLeft(fineThrust)
         }
         if (input.keys.pressing(Key.RIGHT) || input.keys.pressing(Key.D)) {
             torqueInput = true
-            torqueRight(ship, angularThrust)
+            ship.torqueRight(angularThrust)
         }
         if (input.keys.pressing(Key.LEFT) || input.keys.pressing(Key.A)) {
             torqueInput = true
-            torqueLeft(ship, angularThrust)
+            ship.torqueLeft(angularThrust)
         }
         if (input.keys.justPressed(Key.X)) {
             if (flightAssist) {
@@ -64,90 +64,89 @@ class Ship(parent: Container): Container() {
                 flightAssistText.color = Colors.DARKGREEN
             }
         }
-        flightAssist(ship, thrustInput, torqueInput, toggled = flightAssist)
+        ship.flightAssist(thrustInput, torqueInput, toggled = flightAssist)
     }
 
-    private fun flightAssist(
-        body: Body,
+    private fun Body.flightAssist(
         thrustInput: Boolean,
         torqueInput: Boolean,
         toggled: Boolean
     ) {
         if (toggled) {
-            if (!thrustInput && body.linearVelocity.lengthSquared() > 0) {
-                val forward = Vec2(body.angle.cosine.toFloat(), body.angle.sine.toFloat())
+            if (!thrustInput && linearVelocity.lengthSquared() > 0) {
+                val forward = Vec2(angle.cosine.toFloat(), angle.sine.toFloat())
                 val backward = forward.negate()
-                val right = Vec2(-body.angle.sine.toFloat(), body.angle.cosine.toFloat())
+                val right = Vec2(-angle.sine.toFloat(), angle.cosine.toFloat())
                 val left = right.negate()
 
-                val shipSpeed = body.linearVelocity.length()
-                val shipVelocityDirection = body.linearVelocity / shipSpeed
+                val shipSpeed = linearVelocity.length()
+                val shipVelocityDirection = linearVelocity / shipSpeed
 
-                if (Vec2.dot(forward, shipVelocityDirection) < 0) thrustForward(body, Vec2.dot(forward, shipVelocityDirection) * -fineThrust)
-                if (Vec2.dot(backward, shipVelocityDirection) < 0) thrustBackward(body, Vec2.dot(backward, shipVelocityDirection) * -fineThrust)
-                if (Vec2.dot(right, shipVelocityDirection) < 0) thrustRight(body, Vec2.dot(right, shipVelocityDirection) * -fineThrust)
-                if (Vec2.dot(left, shipVelocityDirection) < 0) thrustLeft(body, Vec2.dot(left, shipVelocityDirection) * -fineThrust)
+                if (Vec2.dot(forward, shipVelocityDirection) < 0) thrustForward(Vec2.dot(forward, shipVelocityDirection) * -fineThrust)
+                if (Vec2.dot(backward, shipVelocityDirection) < 0) thrustBackward(Vec2.dot(backward, shipVelocityDirection) * -fineThrust)
+                if (Vec2.dot(right, shipVelocityDirection) < 0) thrustRight(Vec2.dot(right, shipVelocityDirection) * -fineThrust)
+                if (Vec2.dot(left, shipVelocityDirection) < 0) thrustLeft(Vec2.dot(left, shipVelocityDirection) * -fineThrust)
             }
 
-            if (!torqueInput && body.angularVelocity.absoluteValue > 0) {
-                if (body.angularVelocity > 0) torqueLeft(body, angularThrust)
-                if (body.angularVelocity < 0) torqueRight(body, angularThrust)
+            if (!torqueInput && angularVelocity.absoluteValue > 0) {
+                if (angularVelocity > 0) torqueLeft(angularThrust)
+                if (angularVelocity < 0) torqueRight(angularThrust)
             }
         }
     }
 
-    private fun thrustForward(body: Body, thrustAmount: Float) {
-        val thrustDirection = Vec2(body.angle.cosine.toFloat(), body.angle.sine.toFloat())
+    private fun Body.thrustForward(thrustAmount: Float) {
+        val thrustDirection = Vec2(angle.cosine.toFloat(), angle.sine.toFloat())
         val thrustVector = thrustDirection * thrustAmount
 
-        body.applyForceToCenter(calculateLimitedThrustVector(body, thrustVector))
+        applyForceToCenter(calculateLimitedThrustVector(thrustVector))
     }
 
 
-    private fun thrustBackward(body: Body, thrustAmount: Float) {
-        val thrustDirection = Vec2(body.angle.cosine.toFloat(), body.angle.sine.toFloat())
+    private fun Body.thrustBackward(thrustAmount: Float) {
+        val thrustDirection = Vec2(angle.cosine.toFloat(), angle.sine.toFloat())
         val thrustVector = thrustDirection * -thrustAmount
 
-        body.applyForceToCenter(calculateLimitedThrustVector(body, thrustVector))
+        applyForceToCenter(calculateLimitedThrustVector(thrustVector))
     }
 
-    private fun thrustRight(body: Body, thrustAmount: Float) {
-        val thrustDirection = Vec2(-body.angle.sine.toFloat(), body.angle.cosine.toFloat())
+    private fun Body.thrustRight(thrustAmount: Float) {
+        val thrustDirection = Vec2(-angle.sine.toFloat(), angle.cosine.toFloat())
         val thrustVector = thrustDirection * thrustAmount
 
-        body.applyForceToCenter(calculateLimitedThrustVector(body, thrustVector))
+        applyForceToCenter(calculateLimitedThrustVector(thrustVector))
     }
 
-    private fun thrustLeft(body: Body, thrustAmount: Float) {
-        val thrustDirection = Vec2(body.angle.sine.toFloat(), -body.angle.cosine.toFloat())
+    private fun Body.thrustLeft(thrustAmount: Float) {
+        val thrustDirection = Vec2(angle.sine.toFloat(), -angle.cosine.toFloat())
         val thrustVector = thrustDirection * thrustAmount
 
-        body.applyForceToCenter(calculateLimitedThrustVector(body, thrustVector))
+        applyForceToCenter(calculateLimitedThrustVector(thrustVector))
     }
 
-    private fun torqueRight(body: Body, angularThrust: Float) {
-        body.applyTorque(calculateLimitedAngularThrust(body, angularThrust))
+    private fun Body.torqueRight(angularThrust: Float) {
+        applyTorque(calculateLimitedAngularThrust(angularThrust))
     }
 
-    private fun torqueLeft(body: Body, angularThrust: Float) {
-        body.applyTorque(calculateLimitedAngularThrust(body, -angularThrust))
+    private fun Body.torqueLeft(angularThrust: Float) {
+        applyTorque(calculateLimitedAngularThrust(-angularThrust))
     }
 
-    private fun calculateLimitedAngularThrust(body: Body, angularThrust: Float): Float {
-        if (body.angularVelocity.absoluteValue > maxAngularVelocity
-            && ((body.angularVelocity > 0 && angularThrust > 0) || (body.angularVelocity < 0 && angularThrust < 0))
+    private fun Body.calculateLimitedAngularThrust(angularThrust: Float): Float {
+        if (angularVelocity.absoluteValue > maxAngularVelocity
+            && ((angularVelocity > 0 && angularThrust > 0) || (angularVelocity < 0 && angularThrust < 0))
         ) return 0f
 
         return angularThrust
     }
 
-    private fun calculateLimitedThrustVector(body: Body, thrustVector: Vec2): Vec2 {
+    private fun Body.calculateLimitedThrustVector(thrustVector: Vec2): Vec2 {
         val thrustAmount = thrustVector.length()
 
         val thrustDirection = thrustVector / thrustAmount
         val fullThrustVector = thrustDirection * thrustAmount
-        val shipSpeed = body.linearVelocity.length()
-        val shipVelocityDirection = body.linearVelocity / shipSpeed
+        val shipSpeed = linearVelocity.length()
+        val shipVelocityDirection = linearVelocity / shipSpeed
 
         //calculate limited thrust
         val amountOfThrustInDirectionOfVelocity = thrustAmount * Vec2.dot(thrustDirection, shipVelocityDirection)
