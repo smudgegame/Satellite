@@ -44,9 +44,8 @@ suspend fun main() = Korge(
     }
 
     addUpdater {
-
-        wrapBodyInView(ship)
-        applyDragToBody(ship)
+        ship.wrapInView()
+        ship.applyDrag()
 
         applyControls(ship, flightAssistText)
     }
@@ -187,28 +186,28 @@ fun calculateLimitedThrustVector(body: Body, thrustVector: Vec2): Vec2 {
     return if (shipSpeed > maxLinearVel && isThrustInDirectionOfMaxVelocity) limitedThrustVector else thrustDirection.mul(thrustAmount)
 }
 
-fun applyDragToBody(body: Body) {
+fun Body.applyDrag() {
     //Linear Drag
-    if (body.linearVelocity.lengthSquared() > 0f) {
-        body.applyForceToCenter(body.linearVelocity.mul(-0.005f * body.linearVelocity.lengthSquared()))
+    if (linearVelocity.lengthSquared() > 0f) {
+        applyForceToCenter(linearVelocity.mul(-0.005f * linearVelocity.lengthSquared()))
     }
 
     //Angular Drag
-    if (body.angularVelocity.absoluteValue > 0f) {
-        body.applyTorque(sign(body.angularVelocity) * -0.005f)
+    if (angularVelocity.absoluteValue > 0f) {
+        applyTorque(sign(angularVelocity) * -0.005f)
     }
 }
 
-fun wrapBodyInView(body: Body) {
+fun Body.wrapInView() {
     val leftBound = 0f
     val rightBound = 40f
     val upBound = 0f
     val downBound = 40f
 
     when {
-        body.position.x > rightBound -> body.setTransform(Vec2(0f, body.position.y), body.angle)
-        body.position.y > downBound -> body.setTransform(Vec2(body.position.x, 0f), body.angle)
-        body.position.x < leftBound -> body.setTransform(Vec2(40f, body.position.y), body.angle)
-        body.position.y < upBound -> body.setTransform(Vec2(body.position.x, 40f), body.angle)
+        position.x > rightBound -> setTransform(Vec2(0f, position.y), angle)
+        position.y > downBound -> setTransform(Vec2(position.x, 0f), angle)
+        position.x < leftBound -> setTransform(Vec2(40f, position.y), angle)
+        position.y < upBound -> setTransform(Vec2(position.x, 40f), angle)
     }
 }
