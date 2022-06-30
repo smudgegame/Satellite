@@ -52,11 +52,11 @@ class Ship(parent: Container): Container() {
                 else -> ship.thrustForward(forwardThrust)
             }
         }
-        if (input.keys.pressing(Key.DOWN) || input.keys.pressing(Key.S) || leftTrigger.toFloat() < -0.0001 || rightStick.y.toFloat() < -0.0001) {
+        if (input.keys.pressing(Key.DOWN) || input.keys.pressing(Key.S) || leftTrigger.toFloat() > 0.0001 || rightStick.y.toFloat() < -0.0001) {
             thrustInput = true
 
             when {
-                leftTrigger.toFloat() < -0.0001 -> ship.thrustBackward(leftTrigger.toFloat().absoluteValue * fineThrust)
+                leftTrigger.toFloat() > 0.0001 -> ship.thrustBackward(leftTrigger.toFloat() * fineThrust)
                 rightStick.y.toFloat() < -0.0001 -> ship.thrustBackward(rightStick.y.toFloat().absoluteValue * fineThrust)
                 else -> ship.thrustBackward(fineThrust)
             }
@@ -66,7 +66,7 @@ class Ship(parent: Container): Container() {
 
             if (rightStick.x.toFloat() > 0.0001)
                 ship.thrustRight(rightStick.x.toFloat() * fineThrust)
-            else 
+            else
                 ship.thrustRight(fineThrust)
         }
         if (input.keys.pressing(Key.Q) || input.keys.pressing(Key.DELETE) || rightStick.x.toFloat() < -0.0001) {
