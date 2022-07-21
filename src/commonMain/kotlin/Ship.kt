@@ -25,9 +25,6 @@ class Ship(parent: Container): Container() {
         stage.applyControls(body, flightAssistText)
     }
 
-
-
-
     private fun Stage.applyControls(
         ship: Body,
         flightAssistText: Text
