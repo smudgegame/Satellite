@@ -8,11 +8,8 @@ import org.jbox2d.callbacks.ContactListener
 import org.jbox2d.collision.Manifold
 import org.jbox2d.collision.shapes.PolygonShape
 import org.jbox2d.common.Vec2
-import org.jbox2d.dynamics.Body
-import org.jbox2d.dynamics.BodyType
-import org.jbox2d.dynamics.FixtureDef
+import org.jbox2d.dynamics.*
 import org.jbox2d.dynamics.contacts.Contact
-import org.jbox2d.dynamics.forEachFixture
 import org.jbox2d.dynamics.joints.Joint
 import org.jbox2d.dynamics.joints.JointDef
 import org.jbox2d.dynamics.joints.JointType
@@ -22,6 +19,7 @@ import org.jbox2d.pooling.arrays.Vec2ArrayPool
 class Ship(mainStage: Stage) : Container() {
     private var landedStation: Body? = null
     private var parentJoin: Joint? = null
+    private var landingGear: Fixture
     private val vertices = listOf<Pair<Number, Number>>(
         Pair(0, 0),
         Pair(50, 0),
@@ -45,49 +43,35 @@ class Ship(mainStage: Stage) : Container() {
         mainStage.addUpdater {
             shipBody.wrapInView()
             shipBody.applyDrag()
-            if (parentJoin == null && landedStation != null){
-                parentJoin = shipBody.world.createJoint(WeldJointDef().apply {
-                    bodyA = shipBody
-                    bodyB = landedStation
-                    referenceAngleDegrees = 90f
-                })!!
-            }
+            attemptLanding()
         }
 
-        val landingGear = shipBody.createFixture(
+        landingGear = shipBody.createFixture(
             FixtureDef().apply {
                 shape = BoxShape(Rectangle(-10, 0, 10, 27) / nearestBox2dWorld.customScale)
                 isSensor = true
-            })
-
-
-        shipBody.world.setContactListener(object : ContactListener {
-            override fun beginContact(contact: Contact) {
-                val fixA = contact.m_fixtureA!!
-                val fixB = contact.m_fixtureB!!
-                val bodyA = fixA.m_body!!
-                val bodyB = fixB.m_body!!
-                when {
-                    bodyA == bodyB -> println("same body")
-                    bodyA != shipBody && bodyB != shipBody -> {}
-                    fixA != landingGear && fixB != landingGear -> println("Contact")
-                    !landingSites.contains(fixA) && !landingSites.contains(fixB) -> println("Contact")
-                    bodyA == shipBody -> attemptLanding(bodyB)
-                    else -> attemptLanding(bodyA)
-                }
-            }
-
-            override fun endContact(contact: Contact) {
-            }
-            override fun postSolve(contact: Contact, impulse: ContactImpulse) {
-            }
-            override fun preSolve(contact: Contact, oldManifold: Manifold) {
-            }
-        })
+            })!!
     }
 
-    private fun attemptLanding(landingSite: Body){
-        landedStation = landingSite
+    fun onCollide(bodyA: Body, bodyB: Body, fixA: Fixture, fixB: Fixture) {
+        when {
+            bodyA == bodyB -> println("same body")
+            bodyA != shipBody && bodyB != shipBody -> {}
+            fixA != landingGear && fixB != landingGear -> println("Contact")
+            !landingSites.contains(fixA) && !landingSites.contains(fixB) -> println("Contact")
+            bodyA == shipBody -> landedStation = bodyB
+            else -> landedStation = bodyA
+        }
+    }
+
+    private fun attemptLanding() {
+        if (parentJoin == null && landedStation != null) {
+            parentJoin = shipBody.world.createJoint(WeldJointDef().apply {
+                bodyA = shipBody
+                bodyB = landedStation
+                referenceAngleDegrees = 90f
+            })!!
+        }
     }
 
     private fun createBoundingPolygon(): PolygonShape {

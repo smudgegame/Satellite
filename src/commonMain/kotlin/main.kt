@@ -5,10 +5,14 @@ import com.soywiz.korgw.GameWindow
 import com.soywiz.korim.color.Colors
 import com.soywiz.korma.geom.Angle
 import com.soywiz.korma.geom.Rectangle
+import org.jbox2d.callbacks.ContactImpulse
+import org.jbox2d.callbacks.ContactListener
+import org.jbox2d.collision.Manifold
 import org.jbox2d.common.Vec2
 import org.jbox2d.dynamics.Body
 import org.jbox2d.dynamics.BodyType
 import org.jbox2d.dynamics.Fixture
+import org.jbox2d.dynamics.contacts.Contact
 
 const val angularThrust = 5f
 const val forwardThrust = 20f
@@ -40,6 +44,20 @@ suspend fun main() = Korge(
     Station(this, 500, 100, Angle.fromDegrees(-90))
 
     createUI(this)
+
+    nearestBox2dWorld.setContactListener(object : ContactListener {
+        override fun beginContact(contact: Contact) {
+            val fixA = contact.m_fixtureA!!
+            val fixB = contact.m_fixtureB!!
+            val bodyA = fixA.m_body!!
+            val bodyB = fixB.m_body!!
+            ship.onCollide(bodyA, bodyB, fixA, fixB)
+        }
+
+        override fun endContact(contact: Contact) {}
+        override fun postSolve(contact: Contact, impulse: ContactImpulse) {}
+        override fun preSolve(contact: Contact, oldManifold: Manifold) {}
+    })
 }
 
 fun Body.wrapInView() {
