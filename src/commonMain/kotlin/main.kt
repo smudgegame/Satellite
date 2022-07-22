@@ -29,6 +29,7 @@ suspend fun main() = Korge(
     quality = GameWindow.Quality.PERFORMANCE, title = "Satellite"
 ) {
     val ship = Ship(this)
+    val orb = Orb(this)
 
     //platform
     solidRect(20, 200, Colors.WHITE).position(500, 100).registerBodyWithFixture(shape = BoxShape(Rectangle(2,2,16,196) / nearestBox2dWorld.customScale), type = BodyType.STATIC)
