@@ -1,8 +1,9 @@
 import com.soywiz.korge.Korge
-import com.soywiz.korge.box2d.registerBodyWithFixture
+import com.soywiz.korge.box2d.*
 import com.soywiz.korge.view.*
 import com.soywiz.korgw.GameWindow
 import com.soywiz.korim.color.Colors
+import com.soywiz.korma.geom.Rectangle
 import org.jbox2d.common.Vec2
 import org.jbox2d.dynamics.Body
 import org.jbox2d.dynamics.BodyType
@@ -23,7 +24,7 @@ suspend fun main() = Korge(
     val ship = Ship(this)
 
     //platform
-    solidRect(200, 20, Colors.WHITE).position(200, 700).registerBodyWithFixture(type = BodyType.STATIC)
+    solidRect(20, 200, Colors.WHITE).position(500, 100).registerBodyWithFixture(shape = BoxShape(Rectangle(2,2,16,196) / nearestBox2dWorld.customScale), type = BodyType.STATIC)
 
     createUI(this)
 }
