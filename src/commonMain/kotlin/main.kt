@@ -38,7 +38,7 @@ suspend fun main() = Korge(
     quality = GameWindow.Quality.PERFORMANCE, title = "Satellite"
 ) {
     val ship = Ship(this)
-    generateAsteroids(this,20)
+    generateAsteroids(this, (15..20).random())
     //val orb = Orb(this)
 
     Station(this, 350, 200, Angle.fromDegrees(0))
@@ -62,10 +62,10 @@ suspend fun main() = Korge(
     })
 }
 
-fun generateAsteroids(mainStage: Stage,amount: Int) {
-    for (i in 0..amount){
+fun generateAsteroids(mainStage: Stage, amount: Int) {
+    for (i in 0..amount) {
         val size = (20..50).random()
-        Asteroid(mainStage,size)
+        Asteroid(mainStage, size)
     }
 }
 

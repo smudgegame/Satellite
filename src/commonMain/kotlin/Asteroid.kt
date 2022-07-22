@@ -3,6 +3,7 @@ import com.soywiz.korge.box2d.nearestBox2dWorld
 import com.soywiz.korge.box2d.registerBodyWithFixture
 import com.soywiz.korge.view.*
 import com.soywiz.korim.color.Colors
+import com.soywiz.korim.color.RGBA
 import com.soywiz.korma.geom.shape.buildVectorPath
 import org.jbox2d.collision.shapes.PolygonShape
 import org.jbox2d.common.Vec2
@@ -20,23 +21,29 @@ class Asteroid(mainStage: Stage, radius: Int) : Container() {
     private val vertices = createAsteroidVertices()
 
     //Random initialization
-    private var initialized = false
-    private val velocityMagnitude = 100
+    private val velocityMagnitude = 3
     private val randomInitialVelocity = Vec2((-velocityMagnitude..velocityMagnitude).random().toFloat(),(-velocityMagnitude..velocityMagnitude).random().toFloat())
-    private val initialAngularImpulse = (-100..100).random() * Random.nextFloat()
+    private val initialAngularImpulse = (-10..10).random() / 10f
     private val randomXPosition = (0..WINDOW_WIDTH).random()
     private val randomYPosition = (0..WINDOW_HEIGHT).random()
+    private val color = (50..150).random()
 
     private val asteroidBody = mainStage.container {
         shapeView(buildVectorPath {
             vertices.forEach { (x, y) -> lineTo( 1.1 * x.toDouble(),  1.1 * y.toDouble()) }
-        }, Colors["#9b9b9b"], Colors.TRANSPARENT_BLACK, 2.0)
+        }, RGBA(color, color, color, 255), Colors.TRANSPARENT_BLACK, 2.0)
     }.position(randomXPosition, randomYPosition)
         .registerBodyWithFixture(shape = createBoundingPolygon(), type = BodyType.DYNAMIC, friction = 2f, gravityScale = 0f).body!!
 
     init {
+        var doOnce = 0
         mainStage.addUpdater {
             asteroidBody.wrapInView(mainStage, nearestBox2dWorld.customScale.toFloat())
+            if (doOnce < 2){
+                doOnce += 1
+                asteroidBody.linearVelocity = randomInitialVelocity
+                asteroidBody.angularVelocity = initialAngularImpulse
+            }
         }
     }
 

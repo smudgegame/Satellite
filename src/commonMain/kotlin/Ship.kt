@@ -19,7 +19,7 @@ import org.jbox2d.pooling.arrays.Vec2ArrayPool
 import kotlin.math.abs
 
 const val fuelCapacity = 100f
-var fuel = 20f
+var fuel = 100f
 
 class Ship(mainStage: Stage) : Container() {
     private var landedStation: Body? = null
