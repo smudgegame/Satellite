@@ -1,6 +1,7 @@
 import com.soywiz.korge.box2d.*
 import com.soywiz.korge.view.*
 import com.soywiz.korim.color.Colors
+import com.soywiz.korma.geom.Angle
 import com.soywiz.korma.geom.Rectangle
 import com.soywiz.korma.geom.shape.buildVectorPath
 import org.jbox2d.callbacks.ContactImpulse
@@ -15,6 +16,7 @@ import org.jbox2d.dynamics.joints.JointDef
 import org.jbox2d.dynamics.joints.JointType
 import org.jbox2d.dynamics.joints.WeldJointDef
 import org.jbox2d.pooling.arrays.Vec2ArrayPool
+import kotlin.math.abs
 
 class Ship(mainStage: Stage) : Container() {
     private var landedStation: Body? = null
@@ -22,11 +24,11 @@ class Ship(mainStage: Stage) : Container() {
     private var landingGear: Fixture
     private val vertices = listOf<Pair<Number, Number>>(
         Pair(0, 0),
-        Pair(50, 0),
-        Pair(62.5, 12.5),
-        Pair(62.5, 14.5),
-        Pair(50.0, 27.0),
-        Pair(0.0, 27.0),
+        Pair(0,-50),
+        Pair(12.5, -62.5),
+        Pair(14.5, -62.5),
+        Pair(27.0, -50.0 ),
+        Pair(27.0, 0.0),
         Pair(0.0, 0.0),
     )
 
@@ -34,8 +36,9 @@ class Ship(mainStage: Stage) : Container() {
         shapeView(buildVectorPath {
             vertices.forEach { (x, y) -> lineTo(x.toDouble(), y.toDouble()) }
         }, Colors.WHITE, Colors.TRANSPARENT_BLACK, 4.0)
-        solidRect(10, 27, Colors.GREEN).position(-10, 0)
+        solidRect(27, 10, Colors.GREEN).position(0, -10)
     }.position(300, 100)
+        .rotation(Angle.Companion.fromDegrees(90))
         .registerBodyWithFixture(shape = createBoundingPolygon(), type = BodyType.DYNAMIC, friction = 2f, gravityScale = 0f).body!!
 
     init {
@@ -48,7 +51,7 @@ class Ship(mainStage: Stage) : Container() {
 
         landingGear = shipBody.createFixture(
             FixtureDef().apply {
-                shape = BoxShape(Rectangle(-10, 0, 10, 27) / nearestBox2dWorld.customScale)
+                shape = BoxShape(Rectangle(0, -10, 27, 10) / nearestBox2dWorld.customScale)
                 isSensor = true
             })!!
     }
@@ -66,11 +69,16 @@ class Ship(mainStage: Stage) : Container() {
 
     private fun attemptLanding() {
         if (parentJoin == null && landedStation != null) {
-            parentJoin = shipBody.world.createJoint(WeldJointDef().apply {
-                bodyA = shipBody
-                bodyB = landedStation
-                referenceAngleDegrees = 90f
-            })!!
+            landedStation!!.angleDegrees
+            shipBody.angleDegrees
+            val diff = abs(landedStation!!.angleDegrees - shipBody.angleDegrees)
+            if (diff < 30) {
+                parentJoin = shipBody.world.createJoint(WeldJointDef().apply {
+                    bodyA = shipBody
+                    bodyB = landedStation
+                    referenceAngleDegrees = 0f
+                })!!
+            }
         }
     }
 
