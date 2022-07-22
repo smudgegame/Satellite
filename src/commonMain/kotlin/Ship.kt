@@ -44,6 +44,4 @@ class Ship(mainStage: Stage) : Container() {
 
         return boundingShape
     }
-
-
 }

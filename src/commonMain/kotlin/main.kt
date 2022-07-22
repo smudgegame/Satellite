@@ -8,12 +8,19 @@ import org.jbox2d.common.Vec2
 import org.jbox2d.dynamics.Body
 import org.jbox2d.dynamics.BodyType
 
-const val angularThrust = 1f
-const val forwardThrust = 12f
-const val fineThrust = 0.15f * forwardThrust
+const val angularThrust = 4f
+const val forwardThrust = 25f
+const val fineThrust = 0.5f * forwardThrust
 
-const val maxAngularVelocity = 1.5f
-const val maxLinearVel = 5f
+const val maxAngularVelocity = 5f
+const val maxLinearVel = 20f
+
+//const val angularThrust = 1f
+//const val forwardThrust = 12f
+//const val fineThrust = 0.15f * forwardThrust
+//
+//const val maxAngularVelocity = 1.5f
+//const val maxLinearVel = 5f
 
 var flightAssist = false
 
@@ -22,6 +29,7 @@ suspend fun main() = Korge(
     quality = GameWindow.Quality.PERFORMANCE, title = "Satellite"
 ) {
     val ship = Ship(this)
+    val asteroid = Asteroid(this, 50)
 
     //platform
     solidRect(20, 200, Colors.WHITE).position(500, 100).registerBodyWithFixture(shape = BoxShape(Rectangle(2,2,16,196) / nearestBox2dWorld.customScale), type = BodyType.STATIC)
