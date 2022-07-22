@@ -30,7 +30,7 @@ class Ship(mainStage: Stage) : Container() {
     init {
         Controls(shipBody, mainStage)
         mainStage.addUpdater {
-            shipBody.wrapInView()
+            shipBody.wrapInView(mainStage, nearestBox2dWorld.customScale.toFloat())
             shipBody.applyDrag()
         }
     }

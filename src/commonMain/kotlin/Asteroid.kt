@@ -4,12 +4,12 @@ import com.soywiz.korge.box2d.registerBodyWithFixture
 import com.soywiz.korge.view.*
 import com.soywiz.korim.color.Colors
 import com.soywiz.korma.geom.shape.buildVectorPath
-import org.jbox2d.collision.shapes.CircleShape
 import org.jbox2d.collision.shapes.PolygonShape
 import org.jbox2d.common.Vec2
 import org.jbox2d.dynamics.BodyType
 import org.jbox2d.pooling.arrays.Vec2ArrayPool
 import kotlin.math.PI
+import kotlin.math.absoluteValue
 import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.random.Random
@@ -17,19 +17,28 @@ import kotlin.random.Random
 class Asteroid(mainStage: Stage, radius: Int) : Container() {
     private val _radius = radius
     private val divisions = 8
+    private val vertices = createAsteroidVertices()
 
-    private val offsetScale  = 0.05 * radius
+    //Random initialization
+    private var initialized = false
+    private val velocityMagnitude = 100
+    private val randomInitialVelocity = Vec2((-velocityMagnitude..velocityMagnitude).random().toFloat(),(-velocityMagnitude..velocityMagnitude).random().toFloat())
+    private val initialAngularImpulse = (-100..100).random() * Random.nextFloat()
+    private val randomXPosition = (0..WINDOW_WIDTH).random()
+    private val randomYPosition = (0..WINDOW_HEIGHT).random()
+
+
 
     private val asteroidBody = mainStage.container {
         shapeView(buildVectorPath {
-            createAsteroidVertices().forEach { (x, y) -> lineTo( x.toDouble(),  y.toDouble()) }
-        }, Colors.WHITE, Colors.TRANSPARENT_BLACK, 2.0)
-    }.position(100, 100)
-        .registerBodyWithFixture(shape = createBoundingPolygon(), type = BodyType.STATIC, friction = 2f, gravityScale = 0f).body!!
+            vertices.forEach { (x, y) -> lineTo( 1.1 * x.toDouble(),  1.1 * y.toDouble()) }
+        }, Colors["#9b9b9b"], Colors.TRANSPARENT_BLACK, 2.0)
+    }.position(randomXPosition, randomYPosition)
+        .registerBodyWithFixture(shape = createBoundingPolygon(), type = BodyType.DYNAMIC, friction = 2f, gravityScale = 0f).body!!
 
     init {
         mainStage.addUpdater {
-            asteroidBody.wrapInView()
+            asteroidBody.wrapInView(mainStage, nearestBox2dWorld.customScale.toFloat())
         }
     }
 
@@ -43,7 +52,7 @@ class Asteroid(mainStage: Stage, radius: Int) : Container() {
             if (i == divisions){
                 return@map firstVert
             }
-            val variance = (-15..15).random()
+            val variance = (-20..20).random()
 
             Pair((_radius + variance)* cos(angle),(_radius + variance) * sin(angle)).also{if ( i == 0) firstVert = it }
         }
@@ -53,9 +62,10 @@ class Asteroid(mainStage: Stage, radius: Int) : Container() {
         val vertPool = Vec2ArrayPool()
         val boundingShape = PolygonShape()
         val scale = nearestBox2dWorld.customScale.toFloat()
-        val vectors = createAsteroidVertices().map { (x, y) -> Vec2(x.toFloat(), y.toFloat()) / scale }.toTypedArray()
+        val vectors = vertices.map { (x, y) -> Vec2(x.toFloat(), y.toFloat()) / scale }.toTypedArray()
         boundingShape.set(vectors, divisions, vertPool, null)
 
         return boundingShape
     }
+
 }

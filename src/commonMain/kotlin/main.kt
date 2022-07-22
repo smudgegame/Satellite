@@ -7,6 +7,11 @@ import com.soywiz.korma.geom.Rectangle
 import org.jbox2d.common.Vec2
 import org.jbox2d.dynamics.Body
 import org.jbox2d.dynamics.BodyType
+import org.jbox2d.dynamics.World
+
+const val WINDOW_WIDTH = 1600
+const val WINDOW_HEIGHT = 900
+
 
 const val angularThrust = 4f
 const val forwardThrust = 25f
@@ -25,11 +30,11 @@ const val maxLinearVel = 20f
 var flightAssist = false
 
 suspend fun main() = Korge(
-    width = 800, height = 800,
+    width = WINDOW_WIDTH, height = WINDOW_HEIGHT,
     quality = GameWindow.Quality.PERFORMANCE, title = "Satellite"
 ) {
     val ship = Ship(this)
-    val asteroid = Asteroid(this, 50)
+    generateAsteroids(this,10)
     val orb = Orb(this)
 
 
@@ -39,11 +44,18 @@ suspend fun main() = Korge(
     createUI(this)
 }
 
-fun Body.wrapInView() {
+fun generateAsteroids(mainStage: Stage,amount: Int) {
+    for (i in 0..amount){
+        val size = (20..50).random()
+        Asteroid(mainStage,size)
+    }
+}
+
+fun Body.wrapInView(mainStage: Stage, worldScale: Float) {
     val leftBound = -2f
-    val rightBound = 42f
+    val rightBound = (mainStage.width + 2).toFloat() / worldScale
     val upBound = -2f
-    val downBound = 42f
+    val downBound = (mainStage.height + 2f).toFloat() / worldScale
 
     when {
         position.x > rightBound -> setTransform(Vec2(leftBound, position.y), angle)
