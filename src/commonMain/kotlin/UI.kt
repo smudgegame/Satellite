@@ -18,7 +18,7 @@ fun Container.createUI(mainStage: Stage) {
         centerYOn(fuelGauge.bview)
     }
 
-    var lastAssist = flightAssist
+    var lastAssist = !flightAssist
     mainStage.addUpdater {
         if (lastAssist != flightAssist) {
             lastAssist = flightAssist

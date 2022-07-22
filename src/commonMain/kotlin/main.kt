@@ -1,13 +1,15 @@
 import com.soywiz.korge.Korge
-import com.soywiz.korge.box2d.*
-import com.soywiz.korge.view.*
+import com.soywiz.korge.box2d.nearestBox2dWorld
+import com.soywiz.korge.view.Stage
 import com.soywiz.korgw.GameWindow
-import com.soywiz.korim.color.Colors
-import com.soywiz.korma.geom.Rectangle
+import com.soywiz.korma.geom.Angle
+import org.jbox2d.callbacks.ContactImpulse
+import org.jbox2d.callbacks.ContactListener
+import org.jbox2d.collision.Manifold
 import org.jbox2d.common.Vec2
 import org.jbox2d.dynamics.Body
-import org.jbox2d.dynamics.BodyType
-import org.jbox2d.dynamics.World
+import org.jbox2d.dynamics.Fixture
+import org.jbox2d.dynamics.contacts.Contact
 
 const val WINDOW_WIDTH = 1600
 const val WINDOW_HEIGHT = 900
@@ -27,7 +29,9 @@ const val maxLinearVel = 20f
 //const val maxAngularVelocity = 1.5f
 //const val maxLinearVel = 5f
 
-var flightAssist = false
+var flightAssist = true
+
+val landingSites = mutableListOf<Fixture>()
 
 suspend fun main() = Korge(
     width = WINDOW_WIDTH, height = WINDOW_HEIGHT,
@@ -36,10 +40,26 @@ suspend fun main() = Korge(
     val ship = Ship(this)
     generateAsteroids(this,20)
     //val orb = Orb(this)
-    //platform
-    solidRect(20, 200, Colors.WHITE).position(500, 100).registerBodyWithFixture(shape = BoxShape(Rectangle(2,2,16,196) / nearestBox2dWorld.customScale), type = BodyType.STATIC)
+
+    Station(this, 350, 200, Angle.fromDegrees(0))
+//    Station(this, 200, 100, Angle.fromDegrees(90))
+//    Station(this, 500, 100, Angle.fromDegrees(-90))
 
     createUI(this)
+
+    nearestBox2dWorld.setContactListener(object : ContactListener {
+        override fun beginContact(contact: Contact) {
+            val fixA = contact.m_fixtureA!!
+            val fixB = contact.m_fixtureB!!
+            val bodyA = fixA.m_body!!
+            val bodyB = fixB.m_body!!
+            ship.onCollide(bodyA, bodyB, fixA, fixB)
+        }
+
+        override fun endContact(contact: Contact) {}
+        override fun postSolve(contact: Contact, impulse: ContactImpulse) {}
+        override fun preSolve(contact: Contact, oldManifold: Manifold) {}
+    })
 }
 
 fun generateAsteroids(mainStage: Stage,amount: Int) {

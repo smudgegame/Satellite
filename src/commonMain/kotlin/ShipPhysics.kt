@@ -20,10 +20,10 @@ fun Body.flightAssist(
             val shipSpeed = linearVelocity.length()
             val shipVelocityDirection = linearVelocity / shipSpeed
 
-            if (Vec2.dot(backward, shipVelocityDirection) < 0) thrustForward(Vec2.dot(backward, shipVelocityDirection) * fineThrust)
-            if (Vec2.dot(forward, shipVelocityDirection) < 0) thrustBackward(Vec2.dot(forward, shipVelocityDirection) * fineThrust)
-            if (Vec2.dot(left, shipVelocityDirection) < 0) thrustRight(Vec2.dot(left, shipVelocityDirection) * fineThrust)
-            if (Vec2.dot(right, shipVelocityDirection) < 0) thrustLeft(Vec2.dot(right, shipVelocityDirection) * fineThrust)
+            if (Vec2.dot(backward, shipVelocityDirection) < 0) thrustRight(Vec2.dot(backward, shipVelocityDirection) * fineThrust)
+            if (Vec2.dot(forward, shipVelocityDirection) < 0) thrustLeft(Vec2.dot(forward, shipVelocityDirection) * fineThrust)
+            if (Vec2.dot(left, shipVelocityDirection) < 0) thrustDown(Vec2.dot(left, shipVelocityDirection) * fineThrust)
+            if (Vec2.dot(right, shipVelocityDirection) < 0) thrustUp(Vec2.dot(right, shipVelocityDirection) * fineThrust)
         }
 
         if (!torqueInput && angularVelocity.absoluteValue > 0) {
@@ -33,25 +33,25 @@ fun Body.flightAssist(
     }
 }
 
-fun Body.thrustForward(thrustAmount: Float) {
+fun Body.thrustRight(thrustAmount: Float) {
     val thrustVector = Vec2(angle.cosine.toFloat(), angle.sine.toFloat()) * thrustAmount
 
     applyForceToCenter(calculateLimitedThrustVector(thrustVector))
 }
 
-fun Body.thrustBackward(thrustAmount: Float) {
+fun Body.thrustLeft(thrustAmount: Float) {
     val thrustVector = Vec2(-angle.cosine.toFloat(), -angle.sine.toFloat()) * thrustAmount
 
     applyForceToCenter(calculateLimitedThrustVector(thrustVector))
 }
 
-fun Body.thrustRight(thrustAmount: Float) {
+fun Body.thrustDown(thrustAmount: Float) {
     val thrustVector = Vec2(-angle.sine.toFloat(), angle.cosine.toFloat()) * thrustAmount
 
     applyForceToCenter(calculateLimitedThrustVector(thrustVector))
 }
 
-fun Body.thrustLeft(thrustAmount: Float) {
+fun Body.thrustUp(thrustAmount: Float) {
     val thrustVector = Vec2(angle.sine.toFloat(), -angle.cosine.toFloat()) * thrustAmount
 
     applyForceToCenter(calculateLimitedThrustVector(thrustVector))

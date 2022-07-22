@@ -40,18 +40,18 @@ class Controls(private val ship: Body, mainStage: Stage) {
                 thrustInput = true
 
                 when {
-                    rightTrigger > deadzone -> ship.thrustForward(rightTrigger.toFloat() * forwardThrust)
-                    rightStick.y > deadzone -> ship.thrustForward(rightStick.y.toFloat() * fineThrust)
-                    else -> ship.thrustForward(forwardThrust)
+                    rightTrigger > deadzone -> ship.thrustUp(rightTrigger.toFloat() * forwardThrust)
+                    rightStick.y > deadzone -> ship.thrustUp(rightStick.y.toFloat() * fineThrust)
+                    else -> ship.thrustUp(forwardThrust)
                 }
             }
             if (input.keys.pressing(Key.DOWN) || input.keys.pressing(Key.S) || leftTrigger.toFloat() > deadzone || rightStick.y.toFloat() < -deadzone && fuel > 0) {
                 thrustInput = true
 
                 when {
-                    leftTrigger.toFloat() > deadzone -> ship.thrustBackward(leftTrigger.toFloat() * fineThrust)
-                    rightStick.y.toFloat() < -deadzone -> ship.thrustBackward(rightStick.y.toFloat().absoluteValue * fineThrust)
-                    else -> ship.thrustBackward(fineThrust)
+                    leftTrigger.toFloat() > deadzone -> ship.thrustDown(leftTrigger.toFloat() * fineThrust)
+                    rightStick.y.toFloat() < -deadzone -> ship.thrustDown(rightStick.y.toFloat().absoluteValue * fineThrust)
+                    else -> ship.thrustDown(fineThrust)
                 }
             }
             if (input.keys.pressing(Key.E) || input.keys.pressing(Key.PAGE_DOWN) || rightStick.x.toFloat() > deadzone && fuel > 0 && fuel > 0) {
