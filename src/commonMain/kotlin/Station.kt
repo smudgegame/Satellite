@@ -20,7 +20,7 @@ class Station(container: Container, x: Int, y: Int, rotation: Angle = Angle.ZERO
 
         landingSites.add(body.createFixture(
             FixtureDef().apply {
-                shape = BoxShape(Rectangle(25, 0, 50, 10)/nearestBox2dWorld.customScale)
+                shape = BoxShape(Rectangle(-25, 0, 50, 10)/nearestBox2dWorld.customScale)
                 isSensor = true
             }
         )!!)
