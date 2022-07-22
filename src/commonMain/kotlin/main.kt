@@ -1,6 +1,7 @@
 import com.soywiz.korge.Korge
 import com.soywiz.korge.box2d.nearestBox2dWorld
 import com.soywiz.korge.view.Stage
+import com.soywiz.korge.view.onCollisionExit
 import com.soywiz.korgw.GameWindow
 import com.soywiz.korma.geom.Angle
 import org.jbox2d.callbacks.ContactImpulse
@@ -56,7 +57,13 @@ suspend fun main() = Korge(
             ship.onCollide(bodyA, bodyB, fixA, fixB)
         }
 
-        override fun endContact(contact: Contact) {}
+        override fun endContact(contact: Contact) {
+            val fixA = contact.m_fixtureA!!
+            val fixB = contact.m_fixtureB!!
+            val bodyA = fixA.m_body!!
+            val bodyB = fixB.m_body!!
+            ship.onCollideExit(bodyA, bodyB, fixA, fixB)
+        }
         override fun postSolve(contact: Contact, impulse: ContactImpulse) {}
         override fun preSolve(contact: Contact, oldManifold: Manifold) {}
     })

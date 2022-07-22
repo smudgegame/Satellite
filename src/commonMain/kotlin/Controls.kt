@@ -1,6 +1,7 @@
 import com.soywiz.korev.GameButton
 import com.soywiz.korev.GameStick
 import com.soywiz.korev.Key
+import com.soywiz.korge.box2d.body
 import com.soywiz.korge.view.Stage
 import com.soywiz.korge.view.addUpdater
 import com.soywiz.korma.geom.Point
@@ -13,17 +14,16 @@ private const val deadzone = 0.1
 var thrustInput = false
 var torqueInput = false
 
-class Controls(private val ship: Body, mainStage: Stage) {
+class Controls(private val ship: Ship, private val shipBody: Body, mainStage: Stage) {
     private val input = mainStage.input
 
     init {
         mainStage.addUpdater {
-            applyControls(ship)
-
+            applyControls(ship, shipBody)
         }
     }
 
-    private fun applyControls(ship: Body) {
+    private fun applyControls(ship: Ship, shipBody: Body) {
         input.connectedGamepads
 
         thrustInput = false
@@ -35,40 +35,43 @@ class Controls(private val ship: Body, mainStage: Stage) {
         val rightTrigger: Double = rawGamepad0[GameButton.RIGHT_TRIGGER]
         val leftTrigger: Double = rawGamepad0[GameButton.LEFT_TRIGGER]
 
-        if(fuel > 0){
+        if (fuel > 0) {
             if (input.keys.pressing(Key.UP) || input.keys.pressing(Key.W) || rightTrigger > deadzone || rightStick.y.toFloat() > deadzone) {
                 thrustInput = true
 
                 when {
-                    rightTrigger > deadzone -> ship.thrustUp(rightTrigger.toFloat() * forwardThrust)
-                    rightStick.y > deadzone -> ship.thrustUp(rightStick.y.toFloat() * fineThrust)
-                    else -> ship.thrustUp(forwardThrust)
+                    rightTrigger > deadzone -> shipBody.thrustUp(rightTrigger.toFloat() * forwardThrust)
+                    rightStick.y > deadzone -> shipBody.thrustUp(rightStick.y.toFloat() * fineThrust)
+                    else -> {
+                        ship.undock()
+                        shipBody.thrustUp(forwardThrust)
+                    }
                 }
             }
             if (input.keys.pressing(Key.DOWN) || input.keys.pressing(Key.S) || leftTrigger.toFloat() > deadzone || rightStick.y.toFloat() < -deadzone && fuel > 0) {
                 thrustInput = true
 
                 when {
-                    leftTrigger.toFloat() > deadzone -> ship.thrustDown(leftTrigger.toFloat() * fineThrust)
-                    rightStick.y.toFloat() < -deadzone -> ship.thrustDown(rightStick.y.toFloat().absoluteValue * fineThrust)
-                    else -> ship.thrustDown(fineThrust)
+                    leftTrigger.toFloat() > deadzone -> shipBody.thrustDown(leftTrigger.toFloat() * fineThrust)
+                    rightStick.y.toFloat() < -deadzone -> shipBody.thrustDown(rightStick.y.toFloat().absoluteValue * fineThrust)
+                    else -> shipBody.thrustDown(fineThrust)
                 }
             }
             if (input.keys.pressing(Key.E) || input.keys.pressing(Key.PAGE_DOWN) || rightStick.x.toFloat() > deadzone && fuel > 0 && fuel > 0) {
                 thrustInput = true
 
                 if (rightStick.x.toFloat() > deadzone)
-                    ship.thrustRight(rightStick.x.toFloat() * fineThrust)
+                    shipBody.thrustRight(rightStick.x.toFloat() * fineThrust)
                 else
-                    ship.thrustRight(fineThrust)
+                    shipBody.thrustRight(fineThrust)
             }
             if (input.keys.pressing(Key.Q) || input.keys.pressing(Key.DELETE) || rightStick.x.toFloat() < -deadzone && fuel > 0) {
                 thrustInput = true
 
                 if (rightStick.x.toFloat() < -deadzone)
-                    ship.thrustLeft(rightStick.x.toFloat().absoluteValue * fineThrust)
+                    shipBody.thrustLeft(rightStick.x.toFloat().absoluteValue * fineThrust)
                 else
-                    ship.thrustLeft(fineThrust)
+                    shipBody.thrustLeft(fineThrust)
             }
         }
 
@@ -76,21 +79,21 @@ class Controls(private val ship: Body, mainStage: Stage) {
             torqueInput = true
 
             if (leftStick.x > deadzone)
-                ship.torqueRight(leftStick.x.toFloat() * angularThrust)
+                shipBody.torqueRight(leftStick.x.toFloat() * angularThrust)
             else
-                ship.torqueRight(angularThrust)
+                shipBody.torqueRight(angularThrust)
         }
-        if (input.keys.pressing(Key.LEFT) || input.keys.pressing(Key.A) || leftStick.x.toFloat() < -deadzone ) {
+        if (input.keys.pressing(Key.LEFT) || input.keys.pressing(Key.A) || leftStick.x.toFloat() < -deadzone) {
             torqueInput = true
 
             if (leftStick.x.toFloat() < -deadzone)
-                ship.torqueLeft(leftStick.x.toFloat().absoluteValue * angularThrust)
+                shipBody.torqueLeft(leftStick.x.toFloat().absoluteValue * angularThrust)
             else
-                ship.torqueLeft(angularThrust)
+                shipBody.torqueLeft(angularThrust)
         }
         if (input.keys.justPressed(Key.X)) {
             flightAssist = !flightAssist
         }
-        ship.flightAssist(thrustInput, torqueInput, toggled = flightAssist)
+        shipBody.flightAssist(thrustInput, torqueInput, toggled = flightAssist)
     }
 }

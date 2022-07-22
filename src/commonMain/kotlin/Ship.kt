@@ -4,27 +4,23 @@ import com.soywiz.korim.color.Colors
 import com.soywiz.korma.geom.Angle
 import com.soywiz.korma.geom.Rectangle
 import com.soywiz.korma.geom.shape.buildVectorPath
-import org.jbox2d.callbacks.ContactImpulse
-import org.jbox2d.callbacks.ContactListener
-import org.jbox2d.collision.Manifold
 import org.jbox2d.collision.shapes.PolygonShape
 import org.jbox2d.common.Vec2
 import org.jbox2d.dynamics.*
-import org.jbox2d.dynamics.contacts.Contact
 import org.jbox2d.dynamics.joints.Joint
-import org.jbox2d.dynamics.joints.JointDef
-import org.jbox2d.dynamics.joints.JointType
 import org.jbox2d.dynamics.joints.WeldJointDef
 import org.jbox2d.pooling.arrays.Vec2ArrayPool
 import kotlin.math.abs
 
 const val fuelCapacity = 100f
 var fuel = 100f
+var unlimitedFuel = true
 
 class Ship(mainStage: Stage) : Container() {
     private var landedStation: Body? = null
-    private var parentJoin: Joint? = null
+    private var parentJoint: Joint? = null
     private var landingGear: Fixture
+    private var undocking = false
     private val vertices = listOf<Pair<Number, Number>>(
         Pair(0, 0),
         Pair(0, -50),
@@ -45,7 +41,7 @@ class Ship(mainStage: Stage) : Container() {
         .registerBodyWithFixture(shape = createBoundingPolygon(), type = BodyType.DYNAMIC, friction = 2f, gravityScale = 0f).body!!
 
     init {
-        Controls(shipBody, mainStage)
+        Controls(this, shipBody, mainStage)
         mainStage.addUpdater {
             shipBody.wrapInView(mainStage, nearestBox2dWorld.customScale.toFloat())
             shipBody.applyDrag()
@@ -62,7 +58,7 @@ class Ship(mainStage: Stage) : Container() {
     }
 
     private fun consumeFuel() {
-        if (thrustInput && fuel != 0f) {
+        if (thrustInput && fuel != 0f && !unlimitedFuel) {
             fuel -= 0.1f
             if (fuel <= 0f) {
                 fuel = 0f
@@ -81,13 +77,30 @@ class Ship(mainStage: Stage) : Container() {
         }
     }
 
+    fun onCollideExit(bodyA: Body, bodyB: Body, fixA: Fixture, fixB: Fixture) {
+        if (undocking && landedStation != null && (bodyA == landedStation || bodyB == landedStation)) {
+            println("Undocking")
+            undocking = false
+            landedStation = null
+        }
+    }
+
+    fun undock() {
+        if (parentJoint != null) {
+            shipBody.world.destroyJoint(parentJoint)
+            parentJoint = null
+            undocking = true
+        }
+
+    }
+
     private fun attemptLanding() {
-        if (parentJoin == null && landedStation != null) {
+        if (!undocking && parentJoint == null && landedStation != null) {
             landedStation!!.angleDegrees
             shipBody.angleDegrees
             val diff = abs(landedStation!!.angleDegrees - shipBody.angleDegrees)
             if (diff < 30) {
-                parentJoin = shipBody.world.createJoint(WeldJointDef().apply {
+                parentJoint = shipBody.world.createJoint(WeldJointDef().apply {
                     bodyA = shipBody
                     bodyB = landedStation
                     referenceAngleDegrees = 0f
