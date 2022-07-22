@@ -36,8 +36,8 @@ suspend fun main() = Korge(
 //    val orb = Orb(this)
 
     Station(this, 350, 200, Angle.fromDegrees(0))
-    Station(this, 200, 100, Angle.fromDegrees(90))
-    Station(this, 500, 100, Angle.fromDegrees(-90))
+//    Station(this, 200, 100, Angle.fromDegrees(90))
+//    Station(this, 500, 100, Angle.fromDegrees(-90))
 
     createUI(this)
 }

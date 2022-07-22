@@ -50,10 +50,15 @@ class Ship(mainStage: Stage) : Container() {
 
         shipBody.world.setContactListener(object : ContactListener {
             override fun beginContact(contact: Contact) {
+                val fixA = contact.m_fixtureA!!
+                val fixB = contact.m_fixtureB!!
+                val bodyA = fixA.m_body!!
+                val bodyB = fixB.m_body!!
                 when {
-                    contact.m_fixtureA == sensorFixture -> println("Landing")
-                    contact.m_fixtureA?.m_body == shipBody -> println("Contact")
-                    else  -> println("Ignoring")
+                    bodyA != shipBody && bodyB != shipBody -> {}
+                    !landingSites.contains(fixA) && !landingSites.contains(fixB) -> println("Contact")
+                    bodyA == bodyB -> println("same body")
+                    else  -> println("Landing")
                 }
             }
 
@@ -62,6 +67,10 @@ class Ship(mainStage: Stage) : Container() {
             override fun preSolve(contact: Contact, oldManifold: Manifold) {
             }
         })
+    }
+
+    private fun attemptLanding(landingSite: Body){
+        println("Landing")
     }
 
     private fun createBoundingPolygon(): PolygonShape {
