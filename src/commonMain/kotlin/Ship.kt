@@ -10,6 +10,7 @@ import org.jbox2d.collision.shapes.PolygonShape
 import org.jbox2d.common.Vec2
 import org.jbox2d.dynamics.Body
 import org.jbox2d.dynamics.BodyType
+import org.jbox2d.dynamics.FixtureDef
 import org.jbox2d.dynamics.contacts.Contact
 import org.jbox2d.dynamics.forEachFixture
 import org.jbox2d.pooling.arrays.Vec2ArrayPool
@@ -25,15 +26,13 @@ class Ship(mainStage: Stage) : Container() {
         Pair(0.0, 0.0),
     )
 
-    private lateinit var landingSensor: Body
-
     private val shipBody = mainStage.container {
         shapeView(buildVectorPath {
             vertices.forEach { (x, y) -> lineTo(x.toDouble(), y.toDouble()) }
         }, Colors.WHITE, Colors.TRANSPARENT_BLACK, 4.0)
-        solidRect(10, 27, Colors.GREEN).position(-10, 0) //.registerBodyWithFixture(type = BodyType.DYNAMIC, isSensor = false).also { landingSensor = it.body!! }
+        solidRect(10, 27, Colors.GREEN).position(-10, 0)
     }.position(300, 100)
-        .registerBodyWithFixture(shape = createBoundingPolygon(), type = BodyType.DYNAMIC, friction = 2f, gravityScale = 0f, isSensor = true).body!!
+        .registerBodyWithFixture(shape = createBoundingPolygon(), type = BodyType.DYNAMIC, friction = 2f, gravityScale = 0f).body!!
 
     init {
         Controls(shipBody, mainStage)
@@ -42,15 +41,20 @@ class Ship(mainStage: Stage) : Container() {
             shipBody.applyDrag()
         }
 
-        shipBody.fixture {
-            shape = BoxShape(Rectangle(-10, 0, 10, 27) / nearestBox2dWorld.customScale)
-            isSensor = true
-        }
+        val sensorFixture = shipBody.createFixture(
+            FixtureDef().apply {
+                shape = BoxShape(Rectangle(-10, 0, 10, 27) / nearestBox2dWorld.customScale)
+                isSensor = true
+            })
+
 
         shipBody.world.setContactListener(object : ContactListener {
             override fun beginContact(contact: Contact) {
-                shipBody
-                println("Begin Contact")
+                when {
+                    contact.m_fixtureA == sensorFixture -> println("Landing")
+                    contact.m_fixtureA?.m_body == shipBody -> println("Contact")
+                    else  -> println("Ignoring")
+                }
             }
 
             override fun endContact(contact: Contact) {}
