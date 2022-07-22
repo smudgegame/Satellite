@@ -9,7 +9,11 @@ import org.jbox2d.common.Vec2
 import org.jbox2d.dynamics.BodyType
 import org.jbox2d.pooling.arrays.Vec2ArrayPool
 
+const val fuelCapacity = 100f
+var fuel = 20f
+
 class Ship(mainStage: Stage) : Container() {
+
     private val verticies = listOf<Pair<Number, Number>>(
         Pair(0, 0),
         Pair(50, 0),
@@ -32,6 +36,16 @@ class Ship(mainStage: Stage) : Container() {
         mainStage.addUpdater {
             shipBody.wrapInView(mainStage, nearestBox2dWorld.customScale.toFloat())
             shipBody.applyDrag()
+            consumeFuel()
+        }
+    }
+
+    private fun consumeFuel(){
+        if (thrustInput && fuel != 0f){
+            fuel -= 0.1f
+            if(fuel <= 0f){
+                fuel = 0f
+            }
         }
     }
 

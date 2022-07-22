@@ -27,8 +27,6 @@ class Asteroid(mainStage: Stage, radius: Int) : Container() {
     private val randomXPosition = (0..WINDOW_WIDTH).random()
     private val randomYPosition = (0..WINDOW_HEIGHT).random()
 
-
-
     private val asteroidBody = mainStage.container {
         shapeView(buildVectorPath {
             vertices.forEach { (x, y) -> lineTo( 1.1 * x.toDouble(),  1.1 * y.toDouble()) }
