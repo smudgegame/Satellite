@@ -10,17 +10,17 @@ class Station(container: Container, x: Int, y: Int, rotation: Angle = Angle.ZERO
 
     init {
         val body = container.container {
-            solidRect(200, 20, Colors.WHITE)
-            solidRect(50, 10, Colors.GREEN).position(75, -10)
+            solidRect(200, 20, Colors.WHITE).position(-100, 10)
+            solidRect(50, 10, Colors.GREEN).position(-25, 0)
         }
             .position(x, y)
-            .registerBodyWithFixture(shape = BoxShape(Rectangle(0, 0, 200, 20)/nearestBox2dWorld.customScale), type = BodyType.STATIC)
+            .registerBodyWithFixture(shape = BoxShape(Rectangle(-100, 10, 200, 20)/nearestBox2dWorld.customScale), type = BodyType.STATIC)
             .rotation(rotation)
             .body!!
 
         landingSites.add(body.createFixture(
             FixtureDef().apply {
-                shape = BoxShape(Rectangle(75, -10, 50, 10)/nearestBox2dWorld.customScale)
+                shape = BoxShape(Rectangle(25, 0, 50, 10)/nearestBox2dWorld.customScale)
                 isSensor = true
             }
         )!!)

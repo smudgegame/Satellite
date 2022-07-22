@@ -13,6 +13,9 @@ import org.jbox2d.dynamics.BodyType
 import org.jbox2d.dynamics.FixtureDef
 import org.jbox2d.dynamics.contacts.Contact
 import org.jbox2d.dynamics.forEachFixture
+import org.jbox2d.dynamics.joints.Joint
+import org.jbox2d.dynamics.joints.JointDef
+import org.jbox2d.dynamics.joints.JointType
 import org.jbox2d.pooling.arrays.Vec2ArrayPool
 
 class Ship(mainStage: Stage) : Container() {
@@ -41,7 +44,7 @@ class Ship(mainStage: Stage) : Container() {
             shipBody.applyDrag()
         }
 
-        val sensorFixture = shipBody.createFixture(
+        shipBody.createFixture(
             FixtureDef().apply {
                 shape = BoxShape(Rectangle(-10, 0, 10, 27) / nearestBox2dWorld.customScale)
                 isSensor = true
@@ -58,7 +61,8 @@ class Ship(mainStage: Stage) : Container() {
                     bodyA != shipBody && bodyB != shipBody -> {}
                     !landingSites.contains(fixA) && !landingSites.contains(fixB) -> println("Contact")
                     bodyA == bodyB -> println("same body")
-                    else  -> println("Landing")
+                    bodyA == shipBody -> attemptLanding(bodyB)
+                    else -> attemptLanding(bodyA)
                 }
             }
 
@@ -71,6 +75,11 @@ class Ship(mainStage: Stage) : Container() {
 
     private fun attemptLanding(landingSite: Body){
         println("Landing")
+        shipBody.world.createJoint(JointDef(JointType.WELD).apply {
+            bodyA = shipBody
+            bodyB = landingSite
+        })
+        println("Joined")
     }
 
     private fun createBoundingPolygon(): PolygonShape {
