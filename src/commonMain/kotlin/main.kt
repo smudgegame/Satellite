@@ -1,13 +1,8 @@
 import com.soywiz.korge.Korge
-import com.soywiz.korge.box2d.body
 import com.soywiz.korge.box2d.registerBodyWithFixture
 import com.soywiz.korge.view.*
 import com.soywiz.korgw.GameWindow
 import com.soywiz.korim.color.Colors
-import com.soywiz.korma.geom.Point
-import com.soywiz.korma.geom.PointArrayList
-import com.soywiz.korma.geom.shape.Shape2d
-import com.soywiz.korma.geom.vector.VectorPath
 import org.jbox2d.common.Vec2
 import org.jbox2d.dynamics.Body
 import org.jbox2d.dynamics.BodyType
@@ -27,33 +22,10 @@ suspend fun main() = Korge(
 ) {
     val ship = Ship(this)
 
-    val triangle = this.container()
-    val trianglePath = VectorPath()
-    trianglePath.lineTo(0.0,0.0)
-    trianglePath.lineTo(2.0,0.0)
-    trianglePath.lineTo(0.0,2.0)
-    triangle.shapeView(trianglePath,fill = Colors.WHITE)
-
-    //KTree Test
-    //val myTree = resourcesVfs["ship.ktree"].readKTree(views)
-
     //platform
     solidRect(200, 20, Colors.WHITE).position(200, 700).registerBodyWithFixture(type = BodyType.STATIC)
-    val chunk = solidRect(100,50, Colors.WHITE).position(100,100).registerBodyWithFixture(type = BodyType.DYNAMIC, gravityScale = 0f)
 
-    //UI
-    val flightAssistIndicator = solidRect(100, 25, Colors.WHITE).position(700, 0)
-    addChild(flightAssistIndicator)
-
-    val flightAssistText = text("'X' FA: OFF", 50 * 0.25, Colors.RED) {
-        centerXOn(flightAssistIndicator)
-        alignTopToTopOf(flightAssistIndicator, 5.0)
-    }
-
-    addUpdater {
-        ship.update(this, flightAssistText)
-        chunk.body!!.wrapInView()
-    }
+    createUI(this)
 }
 
 fun Body.wrapInView() {
