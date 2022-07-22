@@ -8,14 +8,21 @@ import org.jbox2d.common.Vec2
 import org.jbox2d.dynamics.Body
 import org.jbox2d.dynamics.BodyType
 
-const val angularThrust = 1f
-const val forwardThrust = 12f
-const val fineThrust = 0.15f * forwardThrust
+const val angularThrust = 5f
+const val forwardThrust = 20f
+const val fineThrust = 0.5f * forwardThrust
 
-const val maxAngularVelocity = 1.5f
-const val maxLinearVel = 5f
+const val maxAngularVelocity = 3f
+const val maxLinearVel = 10f
 
-var flightAssist = false
+//const val angularThrust = 1f
+//const val forwardThrust = 12f
+//const val fineThrust = 0.15f * forwardThrust
+//
+//const val maxAngularVelocity = 1.5f
+//const val maxLinearVel = 5f
+
+var flightAssist = true
 
 suspend fun main() = Korge(
     width = 800, height = 800,
@@ -25,6 +32,10 @@ suspend fun main() = Korge(
 
     //platform
     solidRect(20, 200, Colors.WHITE).position(500, 100).registerBodyWithFixture(shape = BoxShape(Rectangle(2,2,16,196) / nearestBox2dWorld.customScale), type = BodyType.STATIC)
+
+    solidRect(20, 200, Colors.WHITE).position(250, 100).registerBodyWithFixture(shape = BoxShape(Rectangle(2,2,16,196) / nearestBox2dWorld.customScale), type = BodyType.STATIC)
+
+    solidRect(200, 200, Colors.WHITE).position(250, 200).registerBodyWithFixture(type = BodyType.STATIC)
 
     createUI(this)
 }
