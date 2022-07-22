@@ -3,10 +3,12 @@ import com.soywiz.korge.box2d.*
 import com.soywiz.korge.view.*
 import com.soywiz.korgw.GameWindow
 import com.soywiz.korim.color.Colors
+import com.soywiz.korma.geom.Angle
 import com.soywiz.korma.geom.Rectangle
 import org.jbox2d.common.Vec2
 import org.jbox2d.dynamics.Body
 import org.jbox2d.dynamics.BodyType
+import org.jbox2d.dynamics.Fixture
 
 const val angularThrust = 5f
 const val forwardThrust = 20f
@@ -24,19 +26,18 @@ const val maxLinearVel = 10f
 
 var flightAssist = true
 
+val landingSites = mutableListOf<Fixture>()
+
 suspend fun main() = Korge(
     width = 800, height = 800,
     quality = GameWindow.Quality.PERFORMANCE, title = "Satellite"
 ) {
     val ship = Ship(this)
-    val orb = Orb(this)
+//    val orb = Orb(this)
 
-    //platform
-    solidRect(20, 200, Colors.WHITE).position(500, 100).registerBodyWithFixture(shape = BoxShape(Rectangle(2,2,16,196) / nearestBox2dWorld.customScale), type = BodyType.STATIC)
-
-    solidRect(20, 200, Colors.WHITE).position(250, 100).registerBodyWithFixture(shape = BoxShape(Rectangle(2,2,16,196) / nearestBox2dWorld.customScale), type = BodyType.STATIC)
-
-    solidRect(200, 200, Colors.WHITE).position(250, 200).registerBodyWithFixture(type = BodyType.STATIC)
+    Station(this, 350, 200, Angle.fromDegrees(0))
+    Station(this, 200, 100, Angle.fromDegrees(90))
+    Station(this, 500, 100, Angle.fromDegrees(-90))
 
     createUI(this)
 }
