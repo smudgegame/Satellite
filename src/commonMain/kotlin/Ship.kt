@@ -18,8 +18,21 @@ import org.jbox2d.dynamics.joints.WeldJointDef
 import org.jbox2d.pooling.arrays.Vec2ArrayPool
 import kotlin.math.abs
 
-const val fuelCapacity = 100f
-var fuel = 100f
+//--------- DEBUG VALUES ---------
+const val fuelCapacity = 1000f
+var fuel = 1000f
+
+const val healthCapacity = 100f
+var health = 100f
+//--------------------------------
+
+//--------- GAME VALUES ---------
+//const val fuelCapacity = 100f
+//var fuel = 100f
+//
+//const val healthCapacity = 100f
+//var health = 100f
+//-------------------------------
 
 class Ship(mainStage: Stage) : Container() {
     private var landedStation: Body? = null
@@ -74,11 +87,16 @@ class Ship(mainStage: Stage) : Container() {
         when {
             bodyA == bodyB -> println("same body")
             bodyA != shipBody && bodyB != shipBody -> {}
-            fixA != landingGear && fixB != landingGear -> println("Contact")
+            bodyA == shipBody && fixA != landingGear && !landingSites.contains(fixB) -> damage()
             !landingSites.contains(fixA) && !landingSites.contains(fixB) -> println("Contact")
             bodyA == shipBody -> landedStation = bodyB
             else -> landedStation = bodyA
         }
+    }
+
+    private fun damage(){
+        health -= 10
+        println("Damage")
     }
 
     private fun attemptLanding() {
@@ -91,6 +109,7 @@ class Ship(mainStage: Stage) : Container() {
                     bodyA = shipBody
                     bodyB = landedStation
                     referenceAngleDegrees = 0f
+                    println("docked")
                 })!!
             }
         }

@@ -2,6 +2,16 @@ import com.soywiz.korge.view.*
 import com.soywiz.korim.color.Colors
 import com.soywiz.korma.math.min
 
+const val uiContainerWidth = 200
+const val uiBars = 2
+const val uiContainerHeight = 50
+const val uiContainerFullHeight = uiContainerHeight * uiBars
+
+const val uiBarWidth = uiContainerWidth - 10
+const val uiBarHeight = uiContainerHeight - 5
+
+const val uiAlpha = 0.5
+
 fun Container.createUI(mainStage: Stage) {
     val flightAssistIndicator = solidRect(100, 25, Colors.WHITE).position(mainStage.width-100, 0.0)
 
@@ -10,10 +20,32 @@ fun Container.createUI(mainStage: Stage) {
         alignTopToTopOf(flightAssistIndicator, 5.0)
     }
 
+    //UI Container
+    val uiContainer = solidRect(uiContainerWidth,uiContainerFullHeight, Colors["#677c7d"]){
+        x = 0.0
+        y = 0.0
+        alpha = uiAlpha
+    }
 
-    val fuelGauge = solidRect(200,50, Colors["#677c7d"]).position(mainStage.width-this.width, mainStage.height-this.height)
-    val fuelBarWidth = 190
-    val fuelBar = solidRect(190,40, Colors.GREEN){
+    //Health Gauge
+    val healthGauge = solidRect(uiContainerWidth,uiContainerHeight, Colors["#677c7d"]){
+        alpha = 0.0
+        alignTopToTopOf(uiContainer)
+        centerXOn(uiContainer)
+    }
+    val healthBar = solidRect(uiBarWidth,uiBarHeight, Colors["#ab0008"]){
+        alpha = uiAlpha
+        centerXOn(healthGauge.bview)
+        centerYOn(healthGauge.bview)
+    }
+    //Fuel Gauge
+    val fuelGauge = solidRect(uiContainerWidth,uiContainerHeight, Colors["#677c7d"]){
+        alpha = 0.0
+        alignTopToBottomOf(healthGauge.bview)
+        centerXOn(uiContainer)
+    }
+    val fuelBar = solidRect(uiBarWidth,uiBarHeight, Colors.GREEN){
+        alpha = uiAlpha
         centerXOn(fuelGauge.bview)
         centerYOn(fuelGauge.bview)
     }
@@ -31,6 +63,7 @@ fun Container.createUI(mainStage: Stage) {
             }
         }
 
-        fuelBar.width = fuelBarWidth * (fuel / fuelCapacity).toDouble()
+        healthBar.width = uiBarWidth * (health / healthCapacity).toDouble()
+        fuelBar.width = uiBarWidth * (fuel / fuelCapacity).toDouble()
     }
 }
