@@ -6,31 +6,42 @@ import com.soywiz.korgw.GameWindow
 import com.soywiz.korma.geom.Angle
 import org.jbox2d.callbacks.ContactImpulse
 import org.jbox2d.callbacks.ContactListener
+import org.jbox2d.callbacks.DestructionListener
 import org.jbox2d.collision.Manifold
 import org.jbox2d.common.Vec2
 import org.jbox2d.dynamics.Body
 import org.jbox2d.dynamics.Fixture
 import org.jbox2d.dynamics.contacts.Contact
 
-const val WINDOW_WIDTH = 1600
-const val WINDOW_HEIGHT = 900
+
+//------- DEBUG VALUES --------------
+const val WINDOW_WIDTH = 800
+const val WINDOW_HEIGHT = 450
+
+const val angularThrust = 25f
+const val forwardThrust = 60f
+const val fineThrust = 0.75f * forwardThrust
+
+const val maxAngularVelocity = 4f
+const val maxLinearVel = 18f
+
+var flightAssist = true
+//------------------------------------
 
 
-const val angularThrust = 4f
-const val forwardThrust = 25f
-const val fineThrust = 0.5f * forwardThrust
-
-const val maxAngularVelocity = 5f
-const val maxLinearVel = 20f
-
+//---------- Game Values -------------
+//const val WINDOW_WIDTH = 1600
+//const val WINDOW_HEIGHT = 900
+//
 //const val angularThrust = 1f
 //const val forwardThrust = 12f
 //const val fineThrust = 0.15f * forwardThrust
 //
 //const val maxAngularVelocity = 1.5f
 //const val maxLinearVel = 5f
-
-var flightAssist = true
+//
+//var flightAssist = false
+//------------------------------------
 
 val landingSites = mutableListOf<Fixture>()
 
@@ -39,7 +50,8 @@ suspend fun main() = Korge(
     quality = GameWindow.Quality.PERFORMANCE, title = "Satellite"
 ) {
     val ship = Ship(this)
-    generateAsteroids(this, (15..20).random())
+    generateAsteroids(this, 5)
+    //generateAsteroids(this, (15..20).random())
     //val orb = Orb(this)
 
     Station(this, 350, 200, Angle.fromDegrees(0))
@@ -68,6 +80,8 @@ suspend fun main() = Korge(
         override fun preSolve(contact: Contact, oldManifold: Manifold) {}
     })
 }
+
+
 
 fun generateAsteroids(mainStage: Stage, amount: Int) {
     for (i in 0..amount) {

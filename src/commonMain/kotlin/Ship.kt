@@ -12,9 +12,15 @@ import org.jbox2d.dynamics.joints.WeldJointDef
 import org.jbox2d.pooling.arrays.Vec2ArrayPool
 import kotlin.math.abs
 
+var isDestroyed = false
+
 const val fuelCapacity = 100f
 var fuel = 100f
 var unlimitedFuel = true
+
+const val healthCapacity = 100f
+var health = 10f
+var invincible = false
 
 class Ship(mainStage: Stage) : Container() {
     private var landedStation: Body? = null
@@ -66,11 +72,27 @@ class Ship(mainStage: Stage) : Container() {
         }
     }
 
+    private fun applyDamage(){
+        if(health > 0 && !invincible){
+            health -= 10
+            println("Damage")
+        }
+        else if(health <= 0 && !invincible){
+           isDestroyed = true
+        }
+    }
+
+    private fun checkDestroyed(){
+        if (isDestroyed){
+            nearestBox2dWorld.destroyBody(shipBody)
+        }
+    }
+
     fun onCollide(bodyA: Body, bodyB: Body, fixA: Fixture, fixB: Fixture) {
         when {
             bodyA == bodyB -> println("same body")
             bodyA != shipBody && bodyB != shipBody -> {}
-            fixA != landingGear && fixB != landingGear -> println("Contact")
+            bodyA == shipBody && fixA != landingGear && !landingSites.contains(fixB) -> applyDamage()
             !landingSites.contains(fixA) && !landingSites.contains(fixB) -> println("Contact")
             bodyA == shipBody -> landedStation = bodyB
             else -> landedStation = bodyA
@@ -91,7 +113,6 @@ class Ship(mainStage: Stage) : Container() {
             parentJoint = null
             undocking = true
         }
-
     }
 
     private fun attemptLanding() {
@@ -104,6 +125,7 @@ class Ship(mainStage: Stage) : Container() {
                     bodyA = shipBody
                     bodyB = landedStation
                     referenceAngleDegrees = 0f
+                    println("docked")
                 })!!
             }
         }
