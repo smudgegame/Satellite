@@ -12,15 +12,15 @@ import org.jbox2d.dynamics.joints.WeldJointDef
 import org.jbox2d.pooling.arrays.Vec2ArrayPool
 import kotlin.math.abs
 
+var score = 0
+
 var isDestroyed = false
 
 const val fuelCapacity = 100f
 var fuel = 100f
-var unlimitedFuel = true
 
 const val healthCapacity = 100f
-var health = 10f
-var invincible = false
+var health = 100f
 
 class Ship(mainStage: Stage) : Container() {
     private var landedStation: Body? = null

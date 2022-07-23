@@ -15,6 +15,8 @@ import org.jbox2d.dynamics.contacts.Contact
 
 
 //------- DEBUG VALUES --------------
+val debugMode = true
+
 const val WINDOW_WIDTH = 800
 const val WINDOW_HEIGHT = 450
 
@@ -25,22 +27,33 @@ const val fineThrust = 0.75f * forwardThrust
 const val maxAngularVelocity = 4f
 const val maxLinearVel = 18f
 
+var unlimitedFuel = true
+var invincible = true
+
 var flightAssist = true
+
+const val uiScale = 0.5
 //------------------------------------
 
 
 //---------- Game Values -------------
+//val debugMode = false
+//
 //const val WINDOW_WIDTH = 1600
 //const val WINDOW_HEIGHT = 900
 //
-//const val angularThrust = 1f
-//const val forwardThrust = 12f
+//const val angularThrust = 10f
+//const val forwardThrust = 30f
 //const val fineThrust = 0.15f * forwardThrust
 //
 //const val maxAngularVelocity = 1.5f
 //const val maxLinearVel = 5f
 //
+//var unlimitedFuel = false
+//var invincible = false
+//
 //var flightAssist = false
+//const val uiScale = 1
 //------------------------------------
 
 val landingSites = mutableListOf<Fixture>()
@@ -50,13 +63,17 @@ suspend fun main() = Korge(
     quality = GameWindow.Quality.PERFORMANCE, title = "Satellite"
 ) {
     val ship = Ship(this)
-    generateAsteroids(this, 5)
-    //generateAsteroids(this, (15..20).random())
-    //val orb = Orb(this)
+
+    if (!debugMode){
+        generateAsteroids(this, (15..20).random())
+    }
+    else{
+        val orb = Orb(this)
+        generateAsteroids(this, 5)
+    }
 
     Station(this, 350, 200, Angle.fromDegrees(0))
-//    Station(this, 200, 100, Angle.fromDegrees(90))
-//    Station(this, 500, 100, Angle.fromDegrees(-90))
+    Station(this, 350, 200, Angle.fromDegrees(0))
 
     createUI(this)
 
@@ -84,8 +101,15 @@ suspend fun main() = Korge(
 
 
 fun generateAsteroids(mainStage: Stage, amount: Int) {
+    var size = 0
     for (i in 0..amount) {
-        val size = (20..50).random()
+
+        if (!debugMode){
+            size = (20..50).random()
+        }else{
+            size = (10..25).random()
+        }
+
         Asteroid(mainStage, size)
     }
 }

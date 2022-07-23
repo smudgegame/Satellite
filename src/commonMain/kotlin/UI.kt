@@ -2,20 +2,23 @@ import com.soywiz.korge.view.*
 import com.soywiz.korim.color.Colors
 import com.soywiz.korma.math.min
 
-const val uiContainerWidth = 200
-const val uiBars = 2
-const val uiContainerHeight = 50
-const val uiContainerFullHeight = uiContainerHeight * uiBars
-
-const val uiBarWidth = uiContainerWidth - 10
-const val uiBarHeight = uiContainerHeight - 5
-
-const val uiAlpha = 0.5
 
 fun Container.createUI(mainStage: Stage) {
-    val flightAssistIndicator = solidRect(100, 25, Colors.WHITE).position(mainStage.width-100, 0.0)
 
-    val flightAssistText = text("'X' FA: OFF", 50 * 0.25, Colors.RED) {
+    val uiContainerWidth = 200 * uiScale
+    val uiContainerHeight = 50 * uiScale
+
+    val uiBars = 2
+    val uiContainerFullHeight = uiContainerHeight * uiBars
+
+    val uiBarWidth = uiContainerWidth - 10
+    val uiBarHeight = uiContainerHeight - 5
+
+    val uiAlpha = 0.5
+
+    val flightAssistIndicator = solidRect(100 * uiScale, 25 * uiScale, Colors.WHITE).position(mainStage.width-100 * uiScale, 0.0)
+
+    val flightAssistText = text("'X' FA: OFF", 12.5 * uiScale, Colors.RED) {
         centerXOn(flightAssistIndicator)
         alignTopToTopOf(flightAssistIndicator, 5.0)
     }

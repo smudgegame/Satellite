@@ -39,7 +39,7 @@ class Asteroid(mainStage: Stage, radius: Int) : Container() {
         var doOnce = 0
         mainStage.addUpdater {
             asteroidBody.wrapInView(mainStage, nearestBox2dWorld.customScale.toFloat())
-            if (doOnce < 2){
+            if (doOnce < 2 && !debugMode){
                 doOnce += 1
                 asteroidBody.linearVelocity = randomInitialVelocity
                 asteroidBody.angularVelocity = initialAngularImpulse
@@ -57,7 +57,15 @@ class Asteroid(mainStage: Stage, radius: Int) : Container() {
             if (i == divisions){
                 return@map firstVert
             }
-            val variance = (-20..20).random()
+
+            var variance = 0
+
+            if(!debugMode){
+                variance = (-20..20).random()
+            }
+            else{
+                variance = (-5..5).random()
+            }
 
             Pair((_radius + variance)* cos(angle),(_radius + variance) * sin(angle)).also{if ( i == 0) firstVert = it }
         }
@@ -72,5 +80,4 @@ class Asteroid(mainStage: Stage, radius: Int) : Container() {
 
         return boundingShape
     }
-
 }
