@@ -14,7 +14,7 @@ import kotlin.math.abs
 
 const val fuelCapacity = 100f
 var fuel = 100f
-var unlimitedFuel = true
+var unlimitedFuel = false
 
 class Ship(mainStage: Stage) : Container() {
     private var landedStation: Body? = null

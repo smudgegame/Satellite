@@ -36,11 +36,12 @@ val landingSites = mutableListOf<Fixture>()
 
 suspend fun main() = Korge(
     width = WINDOW_WIDTH, height = WINDOW_HEIGHT,
-    quality = GameWindow.Quality.PERFORMANCE, title = "Satellite"
+    quality = GameWindow.Quality.PERFORMANCE, title = "Satellite",
+    iconPath = "icon.png"
 ) {
     val ship = Ship(this)
     generateAsteroids(this, (15..20).random())
-    //val orb = Orb(this)
+//    val orb = Orb(this)
 
     Station(this, 350, 200, Angle.fromDegrees(0))
 //    Station(this, 200, 100, Angle.fromDegrees(90))
