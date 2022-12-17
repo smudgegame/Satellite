@@ -1,3 +1,4 @@
+import com.soywiz.klock.DateTime
 import com.soywiz.korge.Korge
 import com.soywiz.korge.box2d.nearestBox2dWorld
 import com.soywiz.korge.view.Stage
@@ -15,55 +16,56 @@ import org.jbox2d.dynamics.contacts.Contact
 
 
 //------- DEBUG VALUES --------------
-val debugMode = true
-
-const val WINDOW_WIDTH = 800
-const val WINDOW_HEIGHT = 450
-
-const val angularThrust = 25f
-const val forwardThrust = 60f
-const val fineThrust = 0.75f * forwardThrust
-
-const val maxAngularVelocity = 4f
-const val maxLinearVel = 18f
-
-var unlimitedFuel = true
-var invincible = true
-
-var flightAssist = true
-
-const val uiScale = 0.5
+//const val debugMode = true
+//
+//const val WINDOW_WIDTH = 800
+//const val WINDOW_HEIGHT = 450
+//
+//const val angularThrust = 25f
+//const val forwardThrust = 60f
+//const val fineThrust = 0.75f * forwardThrust
+//
+//const val maxAngularVelocity = 4f
+//const val maxLinearVel = 18f
+//
+//var unlimitedFuel = true
+//var invincible = true
+//
+//var flightAssist = true
+//
+//const val uiScale = 0.5
 //------------------------------------
 
 
 //---------- Game Values -------------
-//val debugMode = false
-//
-//const val WINDOW_WIDTH = 1600
-//const val WINDOW_HEIGHT = 900
-//
-//const val angularThrust = 10f
-//const val forwardThrust = 30f
-//const val fineThrust = 0.15f * forwardThrust
-//
-//const val maxAngularVelocity = 1.5f
-//const val maxLinearVel = 5f
-//
-//var unlimitedFuel = false
-//var invincible = false
-//
-//var flightAssist = false
-//const val uiScale = 1
+val debugMode = false
+
+const val WINDOW_WIDTH = 1600
+const val WINDOW_HEIGHT = 900
+
+const val angularThrust = 10f
+const val forwardThrust = 30f
+const val fineThrust = 0.15f * forwardThrust
+
+const val maxAngularVelocity = 1.5f
+const val maxLinearVel = 5f
+
+var unlimitedFuel = false
+var invincible = false
+
+var flightAssist = false
+const val uiScale = 1
 //------------------------------------
 
 val landingSites = mutableListOf<Fixture>()
+var gameClock = DateTime.now()
 
 suspend fun main() = Korge(
     width = WINDOW_WIDTH, height = WINDOW_HEIGHT,
     quality = GameWindow.Quality.PERFORMANCE, title = "Satellite"
 ) {
     val ship = Ship(this)
-
+    println(gameClock)
     if (!debugMode){
         generateAsteroids(this, (15..20).random())
     }
@@ -72,8 +74,8 @@ suspend fun main() = Korge(
         generateAsteroids(this, 5)
     }
 
-    Station(this, 350, 200, Angle.fromDegrees(0))
-    Station(this, 350, 200, Angle.fromDegrees(0))
+    Station(this, 400, 225, Angle.fromDegrees(0))
+
 
     createUI(this)
 

@@ -38,12 +38,12 @@ class Controls(private val ship: Ship, private val shipBody: Body, mainStage: St
         if (fuel > 0) {
             if (input.keys.pressing(Key.UP) || input.keys.pressing(Key.W) || rightTrigger > deadzone || rightStick.y.toFloat() > deadzone) {
                 thrustInput = true
+                ship.undock()
 
                 when {
                     rightTrigger > deadzone -> shipBody.thrustUp(rightTrigger.toFloat() * forwardThrust)
                     rightStick.y > deadzone -> shipBody.thrustUp(rightStick.y.toFloat() * fineThrust)
                     else -> {
-                        ship.undock()
                         shipBody.thrustUp(forwardThrust)
                     }
                 }

@@ -12,7 +12,7 @@ import org.jbox2d.dynamics.joints.WeldJointDef
 import org.jbox2d.pooling.arrays.Vec2ArrayPool
 import kotlin.math.abs
 
-var score = 0
+var score = 0.0
 
 var isDestroyed = false
 
@@ -22,11 +22,14 @@ var fuel = 100f
 const val healthCapacity = 100f
 var health = 100f
 
+var docked = false
+
 class Ship(mainStage: Stage) : Container() {
     private var landedStation: Body? = null
     private var parentJoint: Joint? = null
     private var landingGear: Fixture
-    private var undocking = false
+
+
     private val vertices = listOf<Pair<Number, Number>>(
         Pair(0, 0),
         Pair(0, -50),
@@ -37,14 +40,19 @@ class Ship(mainStage: Stage) : Container() {
         Pair(0.0, 0.0),
     )
 
+    private val shipShapeView = ShapeView(buildVectorPath {
+        vertices.forEach { (x, y) -> lineTo( 1.15 * x.toDouble(),  1.15 * y.toDouble()) }
+    }, Colors.WHITE, Colors.TRANSPARENT_BLACK, 4.0).position(-1.5,4.0)
+
+    private val shipBoundingPolygon = createBoundingPolygon()
+
     private val shipBody = mainStage.container {
-        shapeView(buildVectorPath {
-            vertices.forEach { (x, y) -> lineTo(x.toDouble(), y.toDouble()) }
-        }, Colors.WHITE, Colors.TRANSPARENT_BLACK, 4.0)
-        solidRect(27, 10, Colors.GREEN).position(0, -10)
+        addChild(shipShapeView)
+        solidRect(27, 10, Colors.GREEN).position(0, -4)
     }.position(300, 100)
         .rotation(Angle.Companion.fromDegrees(90))
-        .registerBodyWithFixture(shape = createBoundingPolygon(), type = BodyType.DYNAMIC, friction = 2f, gravityScale = 0f).body!!
+        .registerBodyWithFixture(shape = shipBoundingPolygon, type = BodyType.DYNAMIC, friction = 2f, gravityScale = 0f).body!!
+
 
     init {
         Controls(this, shipBody, mainStage)
@@ -53,6 +61,10 @@ class Ship(mainStage: Stage) : Container() {
             shipBody.applyDrag()
             consumeFuel()
             attemptLanding()
+            if (!docked){
+                landedStation = null
+                parentJoint = null
+            }
         }
 
         landingGear = shipBody.createFixture(
@@ -65,7 +77,7 @@ class Ship(mainStage: Stage) : Container() {
 
     private fun consumeFuel() {
         if (thrustInput && fuel != 0f && !unlimitedFuel) {
-            fuel -= 0.1f
+            fuel -= 0.05f
             if (fuel <= 0f) {
                 fuel = 0f
             }
@@ -90,43 +102,35 @@ class Ship(mainStage: Stage) : Container() {
 
     fun onCollide(bodyA: Body, bodyB: Body, fixA: Fixture, fixB: Fixture) {
         when {
-            bodyA == bodyB -> println("same body")
-            bodyA != shipBody && bodyB != shipBody -> {}
             bodyA == shipBody && fixA != landingGear && !landingSites.contains(fixB) -> applyDamage()
-            !landingSites.contains(fixA) && !landingSites.contains(fixB) -> println("Contact")
-            bodyA == shipBody -> landedStation = bodyB
-            else -> landedStation = bodyA
+            fixA == landingGear && landingSites.contains(fixB) -> landedStation = bodyB
         }
     }
 
     fun onCollideExit(bodyA: Body, bodyB: Body, fixA: Fixture, fixB: Fixture) {
-        if (undocking && landedStation != null && (bodyA == landedStation || bodyB == landedStation)) {
-            println("Undocking")
-            undocking = false
+        if (!docked && (((landingSites.contains(fixA) && fixB == landingGear) || (fixA == landingGear && landingSites.contains(fixB))))) {
+            docked = false
             landedStation = null
+            parentJoint = null
         }
     }
 
     fun undock() {
-        if (parentJoint != null) {
+        if (docked) {
             shipBody.world.destroyJoint(parentJoint)
-            parentJoint = null
-            undocking = true
+            docked = false
         }
     }
 
     private fun attemptLanding() {
-        if (!undocking && parentJoint == null && landedStation != null) {
-            landedStation!!.angleDegrees
-            shipBody.angleDegrees
+        if(landedStation != null && parentJoint == null) {
             val diff = abs(landedStation!!.angleDegrees - shipBody.angleDegrees)
             if (diff < 30) {
-                parentJoint = shipBody.world.createJoint(WeldJointDef().apply {
-                    bodyA = shipBody
-                    bodyB = landedStation
-                    referenceAngleDegrees = 0f
-                    println("docked")
-                })!!
+                val weldJointDef = WeldJointDef()
+                weldJointDef.initialize(shipBody, landedStation!!, shipBody.position)
+                weldJointDef.referenceAngleDegrees = 0f
+                parentJoint = shipBody.world.createJoint(weldJointDef)!!
+                docked = true
             }
         }
     }
